@@ -114,3 +114,16 @@ Pour chaque fonctionnalité :
 ---
 
 Cette roadmap est un plan de travail évolutif, pas un engagement de livraison. Les fonctionnalités TODO ne seront développées qu’après vérification du besoin et de leur pertinence par rapport à upstream.
+
+
+## Point de vigilance CI : accès aux artefacts Drumstick
+
+Les workflows Linux, Windows MSVC, Windows MSYS2 et macOS récupèrent des artefacts du dépôt upstream `pedrolcl/drumstick` avec l’action `dawidd6/action-download-artifact`. Ils référencent le secret `GH_PAT`.
+
+- [ ] Vérifier dans les paramètres GitHub du dépôt que le secret `GH_PAT` est défini, valide et autorisé à lire les artefacts du dépôt upstream.
+- [ ] Confirmer que les noms d’artefacts et les noms de workflows upstream correspondent aux versions publiées.
+- [ ] En cas d’échec CI, distinguer clairement l’échec d’authentification/téléchargement de l’échec de compilation VMPK.
+- [ ] Ne jamais remplacer ce secret par un jeton public ou exposer sa valeur dans les logs.
+- [ ] Étudier à terme une méthode de récupération d’artefacts plus robuste (release upstream ou dépendance versionnée), sans compromettre la sécurité ni la reproductibilité.
+
+À la date de cet audit, l’API GitHub du dépôt ne retourne aucune exécution récente des workflows. Cela ne prouve pas à lui seul que les workflows sont mal configurés : vérifier aussi leur activation et les permissions Actions dans les paramètres du dépôt.
