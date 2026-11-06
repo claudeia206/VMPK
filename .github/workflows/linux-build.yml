@@ -73,6 +73,7 @@ jobs:
       with:
         version: '6.11.2'
         modules: 'qt5compat'
+        setup-python: 'false'
 
     - name: '${{ matrix.icon }} Build Drumstick from source'
       run: |
