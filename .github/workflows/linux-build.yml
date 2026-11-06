@@ -28,8 +28,20 @@ jobs:
 
     - name: '${{ matrix.icon }} Install system dependencies'
       run: |
-        sudo apt-get update -y -o Acquire::Retries=3
-        sudo apt-get install -yq --no-install-recommends \
+        retry_apt() {
+          for attempt in $(seq 1 60); do
+            if sudo apt-get "$@"; then
+              return 0
+            fi
+            echo "APT/DPKG est occupé ou indisponible (tentative $attempt/60). Nouvelle tentative dans 5 secondes."
+            sleep 5
+          done
+          echo "APT est resté indisponible après 5 minutes."
+          return 1
+        }
+
+        retry_apt update -y -o Acquire::Retries=3
+        retry_apt install -yq --no-install-recommends \
           autoconf \
           autoconf-archive \
           automake \
