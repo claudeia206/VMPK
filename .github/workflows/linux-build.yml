@@ -91,9 +91,7 @@ jobs:
     - name: '${{ matrix.icon }} Verify local Drumstick installation'
       run: |
         test -d "${{env.DRUMSTICK_LOCATION}}"
-        find "${{env.DRUMSTICK_LOCATION}}" -maxdepth 5 \
-          \( -name 'DrumstickConfig.cmake' -o -name 'drumstick-config.cmake' \) \
-          -print -quit | grep -q .
+        find "${{env.DRUMSTICK_LOCATION}}" -type f -path '*/cmake/drumstick/*-config.cmake' -print -quit | grep -q .
 
     - name: '${{ matrix.icon }} Configure CMake'
       id: configuration
