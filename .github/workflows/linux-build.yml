@@ -51,6 +51,7 @@ jobs:
           libpulse-dev \
           libsndfile1-dev \
           python3-venv \
+          python3.12-venv \
           libltdl-dev
 
     - name: '${{ matrix.icon }} Set up CMake'
