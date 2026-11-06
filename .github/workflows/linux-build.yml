@@ -9,7 +9,6 @@ on:
 
 env:
   BUILD_TYPE: RelWithDebInfo
-  DRUMSTICKNAME: DrumstickV2
   DRUMSTICK_LOCATION: ${{github.workspace}}/DrumstickV2
 
 jobs:
@@ -27,29 +26,10 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
-    - name: '${{ matrix.icon }} Download Drumstick artifact'
-      uses: dawidd6/action-download-artifact@v27
-      with:
-        name: ${{env.DRUMSTICKNAME}}-${{matrix.arch}}.tar.gz
-        github_token: ${{secrets.GH_PAT}}
-        repo: pedrolcl/drumstick
-        allow_forks: false
-        workflow: linux.yml
-        skip_unpack: true
-
-    - name: '${{ matrix.icon }} Extract Drumstick artifact'
+    - name: '${{ matrix.icon }} Install system dependencies'
       run: |
-        if [ -f ${{env.DRUMSTICKNAME}}-${{matrix.arch}}.tar.gz.zip ]; then
-          mv ${{env.DRUMSTICKNAME}}-${{matrix.arch}}.tar.gz.zip ${{env.DRUMSTICKNAME}}-${{matrix.arch}}.tar.gz
-        fi
-        tar xvzf ${{env.DRUMSTICKNAME}}-${{matrix.arch}}.tar.gz
-
-    - name: '${{ matrix.icon }} Install Dependencies'
-      run: |
-        sudo rm -rf /var/lib/apt/lists/*
-        sudo apt-get clean
         sudo apt-get update -y -o Acquire::Retries=3
-        sudo apt-get install -yq --fix-missing \
+        sudo apt-get install -yq --no-install-recommends \
           autoconf \
           autoconf-archive \
           automake \
@@ -79,6 +59,27 @@ jobs:
       with:
         version: '6.11.2'
 
+    - name: '${{ matrix.icon }} Build Drumstick from source'
+      run: |
+        git clone --depth 1 --branch devel https://github.com/pedrolcl/drumstick.git Drumstick-source
+        cmake ${{ steps.vcpkg.outputs.vcpkg-cmake-config }} \
+          -S Drumstick-source \
+          -B Drumstick-build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DCMAKE_INSTALL_PREFIX="${{env.DRUMSTICK_LOCATION}}" \
+          -DBUILD_DOCS=OFF \
+          -DBUILD_UTILS=OFF \
+          -DBUILD_TESTING=OFF
+        cmake --build Drumstick-build --config ${{env.BUILD_TYPE}} --parallel 2
+        cmake --install Drumstick-build --config ${{env.BUILD_TYPE}}
+
+    - name: '${{ matrix.icon }} Verify local Drumstick installation'
+      run: |
+        test -d "${{env.DRUMSTICK_LOCATION}}"
+        find "${{env.DRUMSTICK_LOCATION}}" -maxdepth 5 \\
+          \( -name 'DrumstickConfig.cmake' -o -name 'drumstick-config.cmake' \) \\
+          -print -quit | grep -q .
+
     - name: '${{ matrix.icon }} Configure CMake'
       id: configuration
       run: >
@@ -93,8 +94,8 @@ jobs:
         -DINSTALL_DEPENDENCIES=ON
         -DEMBED_TRANSLATIONS=ON
 
-    - name: '${{ matrix.icon }} Build'
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - name: '${{ matrix.icon }} Build VMPK'
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 2
 
     - name: '${{ matrix.icon }} Install'
       env:
