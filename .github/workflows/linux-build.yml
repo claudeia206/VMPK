@@ -50,6 +50,7 @@ jobs:
           libasound2-dev \
           libpulse-dev \
           libsndfile1-dev \
+          python3-venv \
           libltdl-dev
 
     - name: '${{ matrix.icon }} Set up CMake'
@@ -89,8 +90,8 @@ jobs:
     - name: '${{ matrix.icon }} Verify local Drumstick installation'
       run: |
         test -d "${{env.DRUMSTICK_LOCATION}}"
-        find "${{env.DRUMSTICK_LOCATION}}" -maxdepth 5 \\
-          \( -name 'DrumstickConfig.cmake' -o -name 'drumstick-config.cmake' \) \\
+        find "${{env.DRUMSTICK_LOCATION}}" -maxdepth 5 \
+          \( -name 'DrumstickConfig.cmake' -o -name 'drumstick-config.cmake' \) \
           -print -quit | grep -q .
 
     - name: '${{ matrix.icon }} Configure CMake'
