@@ -70,6 +70,7 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         version: '6.11.2'
+        modules: 'qt5compat'
 
     - name: '${{ matrix.icon }} Build Drumstick from source'
       run: |
