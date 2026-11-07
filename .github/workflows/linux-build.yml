@@ -68,22 +68,12 @@ jobs:
         token: ${{ github.token }}
         revision: master
 
+    # Qt 6.11.2 archives are misdetected by aqtinstall on Python 3.12.
+    # Pin 6.11.1 until the runner uses Python 3.14 (fixes CPython zipfile detection).
     - name: '${{ matrix.icon }} Install Qt'
-      id: install_qt
-      continue-on-error: true
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.11.2'
-        modules: 'qt5compat'
-        setup-python: 'false'
-      env:
-        PIP_BREAK_SYSTEM_PACKAGES: '1'
-
-    - name: '${{ matrix.icon }} Retry Qt installation after download failure'
-      if: steps.install_qt.outcome == 'failure'
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: '6.11.2'
+        version: '6.11.1'
         modules: 'qt5compat'
         setup-python: 'false'
       env:
