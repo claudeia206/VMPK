@@ -74,6 +74,8 @@ jobs:
         version: '6.11.2'
         modules: 'qt5compat'
         setup-python: 'false'
+      env:
+        PIP_BREAK_SYSTEM_PACKAGES: '1'
 
     - name: '${{ matrix.icon }} Build Drumstick from source'
       run: |
