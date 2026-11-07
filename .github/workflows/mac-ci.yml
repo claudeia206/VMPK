@@ -54,7 +54,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v27
       with:
         name: ${{env.DRUMSTICKNAME}}-${{matrix.arch}}-macos.tar.gz
-        github_token: ${{secrets.GH_PAT}}
+        github_token: ${{ secrets.GH_PAT || github.token }}
         repo: pedrolcl/drumstick
         workflow: mac-ci.yml
         skip_unpack: true
