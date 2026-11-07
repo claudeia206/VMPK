@@ -1,9 +1,9 @@
 # Virtual MIDI Piano Keyboard
 
-[![Linux CI](https://github.com/pedrolcl/VMPK/actions/workflows/linux-build.yml/badge.svg)](https://github.com/pedrolcl/VMPK/actions/workflows/linux-build.yml)  
-[![Windows MSVC CI](https://github.com/pedrolcl/VMPK/actions/workflows/win-msvc-ci.yml/badge.svg)](https://github.com/pedrolcl/VMPK/actions/workflows/win-msvc-ci.yml)  
-[![Windows MSYS2 CI](https://github.com/pedrolcl/VMPK/actions/workflows/win-msys2-ci.yml/badge.svg)](https://github.com/pedrolcl/VMPK/actions/workflows/win-msys2-ci.yml)  
-[![macOS CI](https://github.com/pedrolcl/VMPK/actions/workflows/mac-ci.yml/badge.svg)](https://github.com/pedrolcl/VMPK/actions/workflows/mac-ci.yml)
+[![Linux CI](https://github.com/claudeia206/VMPK/actions/workflows/linux-build.yml/badge.svg)](https://github.com/claudeia206/VMPK/actions/workflows/linux-build.yml)  
+[![Windows MSVC CI](https://github.com/claudeia206/VMPK/actions/workflows/win-msvc-ci.yml/badge.svg)](https://github.com/claudeia206/VMPK/actions/workflows/win-msvc-ci.yml)  
+[![Windows MSYS2 CI](https://github.com/claudeia206/VMPK/actions/workflows/win-msys2-ci.yml/badge.svg)](https://github.com/claudeia206/VMPK/actions/workflows/win-msys2-ci.yml)  
+[![macOS CI](https://github.com/claudeia206/VMPK/actions/workflows/mac-ci.yml/badge.svg)](https://github.com/claudeia206/VMPK/actions/workflows/mac-ci.yml)
 
 VMPK (Virtual MIDI Piano Keyboard) est un générateur et récepteur d’événements MIDI. Il ne produit pas de son lui-même, mais permet de piloter un synthétiseur MIDI matériel ou logiciel, interne ou externe. Vous pouvez jouer des notes MIDI avec le clavier de l’ordinateur ou la souris. VMPK peut également afficher les notes reçues d’un autre instrument ou d’un lecteur de fichiers MIDI : il suffit de connecter le port MIDI de cet autre logiciel au port d’entrée de VMPK.
 
