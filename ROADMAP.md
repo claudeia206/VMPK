@@ -1,129 +1,158 @@
-# VMPK Roadmap
+# Feuille de route VMPK
 
-> Roadmap de travail pour le miroir [xcodeia/VMPK](https://github.com/xcodeia/VMPK). À ajuster selon les retours upstream et les résultats CI.
+> Plan de développement du dépôt [claudeia206/VMPK](https://github.com/claudeia206/VMPK), miroir de [pedrolcl/VMPK](https://github.com/pedrolcl/VMPK). Cette feuille de route est pilotée par les risques : fiabilité de compilation d'abord, documentation et tests ensuite, fonctionnalités enfin.
 
-## Objectif
+## Vision et objectifs
 
-Faire évoluer VMPK de façon prudente et testable, en préservant l’architecture, les comportements MIDI et la compatibilité avec le projet upstream [pedrolcl/VMPK](https://github.com/pedrolcl/VMPK).
+- Maintenir un VMPK fiable sur Linux, Windows et macOS.
+- Préserver le comportement MIDI, les mappings clavier et la compatibilité avec l'amont.
+- Rendre les builds et les paquets reproductibles, sans dépendance à des artefacts non maîtrisés.
+- Faire évoluer le projet par changements petits, testables et réversibles.
+- Conserver les licences, crédits, traductions et conventions du projet upstream.
 
-## Principes de contribution
+## Règles de pilotage
 
-- Travailler sur la branche `devel`; éviter les changements directs sur `master`.
-- Préférer des PR petites, indépendantes et faciles à tester.
-- Ne pas fusionner sans validation CI et revue du diff.
-- Vérifier les demandes existantes upstream avant d’ajouter une fonctionnalité.
-- Maintenir GPL-3.0, les attributions et les traductions.
-- Éviter les changements de dépendances massifs ou les refactorisations sans bénéfice démontré.
+1. Suivre les phases dans l'ordre ci-dessous ; ne pas démarrer une fonctionnalité P2 tant qu'un blocage P0/P1 empêche de construire ou tester correctement.
+2. Une tâche n'est cochée qu'après preuve vérifiable (CI verte, test reproductible, documentation relue ou PR fusionnée).
+3. Travailler dans une branche dédiée et une PR ciblée ; ne pas pousser directement sur `master` ou `devel`.
+4. Ne jamais fusionner une PR si un job requis est en attente, en cours, échoué ou annulé.
+5. Pour la PR #1, exiger explicitement Linux x86_64 (runner Linux Mint self-hosted) **et** Linux ARM64 verts avant toute fusion. Les autres plateformes doivent aussi être examinées.
+6. Ne pas contourner un échec en masquant le test, en neutralisant une étape ou en élargissant les permissions sans justification.
+7. Préférer les versions stables et épinglées des dépendances ; documenter les contournements temporaires et leur condition de retrait.
+8. À chaque étape : lire le code et les issues existantes, vérifier l'amont, limiter le diff, lancer les contrôles pertinents, relire le résultat et mettre à jour cette roadmap.
+9. Les notifications de workflows par e-mail restent désactivées ; utiliser les rapports ChatGPT pour le suivi.
+10. En cas de blocage nécessitant une action locale (runner hors ligne, matériel MIDI absent, permission manquante), fournir la commande ou l'action exacte et poursuivre les tâches indépendantes.
 
-## Phase 0 — État des lieux et mise en place (P0)
+## Tableau de bord
 
-- [ ] Examiner la PR #1 : README Drumstick 2.10 → 2.11; vérifier les contrôles disponibles et la cohérence finale.
-- [ ] Établir l’état de référence de la CI Linux x86_64/ARM64, Windows MSVC/MSYS2 et macOS.
-- [ ] Vérifier déclencheurs, permissions, secrets et versions des GitHub Actions.
-- [ ] Confirmer les dépendances supportées : CMake ≥ 3.16, C++17, Qt 6.2+ (Qt 5.9+ optionnel), Drumstick ≥ 2.11.
-- [ ] Identifier les erreurs de build et warnings reproductibles avant toute modification.
-- [ ] Clarifier les différences entre le miroir et le dépôt upstream.
+| Domaine | Priorité | État | Condition de sortie |
+|---|---:|---|---|
+| Stabilisation de la PR #1 et CI multiplateforme | P0 | En cours | Linux x86_64 + ARM64 verts ; autres jobs examinés ; revue terminée |
+| Cohérence des workflows et dépendances | P0 | En cours | Téléchargements, versions, permissions et packaging reproductibles |
+| Documentation d'installation et dépannage | P1 | À faire | Procédure testée sur les plateformes prises en charge |
+| Tests de non-régression | P1 | À faire | Tests automatisés utiles + scénarios manuels documentés |
+| Bugs et fonctionnalités demandées | P2 | À planifier | Priorité confirmée par issues et faisabilité |
+| UX, clavier et traductions | P2/P3 | À planifier | Changements vérifiés sans régression MIDI |
+| Releases et maintenance | P3 | À planifier | Checklist et procédure de publication reproductibles |
 
-**Sortie attendue :** état CI documenté et liste de problèmes reproductibles.
+## Phase 0 — Stabilisation et état des lieux (P0)
 
-## Phase 1 — Compilation, CI et packaging (P0)
+- [x] Établir une roadmap en phases avec critères de sortie.
+- [ ] Finaliser la PR #1 : construction locale de Drumstick sur Linux et correction des téléchargements Windows/macOS.
+- [ ] Obtenir un résultat terminal **success** pour Linux x86_64 sur le runner Linux Mint self-hosted.
+- [x] Vérifier Linux ARM64 : le dernier résultat connu est vert.
+- [ ] Attendre et vérifier les résultats finaux Windows MSVC, Windows MSYS2 et macOS.
+- [ ] Examiner les logs de chaque job échoué ; distinguer problème de runner, téléchargement, dépendance, configuration, compilation et packaging.
+- [ ] Vérifier les artefacts réellement produits et leur contenu ; ne pas considérer un simple upload comme preuve d'installation fonctionnelle.
+- [ ] Comparer le diff de la PR avec `devel`, vérifier qu'il reste limité au problème CI et relire les workflows modifiés.
 
-- [ ] Corriger les échecs Linux en premier, puis Windows et macOS, avec une PR par problème.
-- [ ] Tester Qt 6 par défaut et Qt 5 via `USE_QT5`.
-- [ ] Vérifier D-Bus et le filtre d’événements natifs Linux (X11/Wayland).
-- [ ] Vérifier les chemins de plugins et bibliothèques Drumstick à l’installation.
-- [ ] Vérifier les artefacts Linux, l’installation Windows et le bundle macOS.
-- [ ] Améliorer les logs de configuration CMake lorsqu’ils sont insuffisants.
+**Critères de sortie :** les jobs requis sont terminés, les cibles Linux x86_64 et ARM64 sont vertes, les autres plateformes sont vertes ou leurs limites sont explicitement documentées ; la PR est prête pour revue. Aucune fusion automatique.
 
-**Sortie attendue :** CI verte sur les plateformes supportées, ou limitations externes clairement identifiées.
+## Phase 1 — CI, compilation et packaging (P0)
+
+- [ ] Vérifier les workflows déclenchés sur PR, push, tags et branches ; contrôler les permissions minimales.
+- [ ] Vérifier les versions de Qt, CMake, compilateurs et Drumstick sur chaque plateforme.
+- [ ] Vérifier la construction de Drumstick depuis une source/version déterministe sur Linux.
+- [ ] Vérifier que les workflows Windows et macOS téléchargent le bon artefact upstream et disposent d'un fallback de jeton limité.
+- [ ] Vérifier les chemins d'installation, les bibliothèques partagées, plugins Qt et dépendances MIDI au runtime.
+- [ ] Tester l'installation/lancement des paquets produits, pas seulement leur génération.
+- [ ] Réduire les duplications YAML et ajouter des timeouts/cache seulement si cela améliore fiabilité ou durée sans masquer les erreurs.
+- [ ] Documenter tout épinglage temporaire (ex. Qt 6.11.1) avec cause, date de réévaluation et condition de retrait.
+
+**Critères de sortie :** builds reproductibles et artefacts vérifiés sur les plateformes annoncées ; aucun secret requis inutilement ; permissions minimales.
 
 ## Phase 2 — Documentation et installation (P1)
 
-- [ ] Aligner README, CMake et workflows sur les versions réelles des dépendances.
-- [ ] Clarifier les procédures de build Qt 5/Qt 6.
-- [ ] Documenter la configuration des ports MIDI virtuels par système.
-- [ ] Ajouter un guide de dépannage : ALSA/permissions, périphérique absent, backend MIDI, plugins Qt.
-- [ ] Vérifier les instructions de contribution et de développement.
+- [ ] Aligner README, CMake, workflows et dépendances sur les versions effectivement supportées.
+- [ ] Documenter les prérequis et commandes de build Qt 6 ; préciser le statut de Qt 5 et de `USE_QT5`.
+- [ ] Écrire des procédures distinctes Linux, Windows et macOS, avec versions testées.
+- [ ] Documenter la configuration MIDI : ALSA, ports virtuels, périphériques, permissions, backend et MIDI thru.
+- [ ] Ajouter un guide de dépannage : périphérique absent, droits d'accès, bibliothèques partagées, plugins Qt, problèmes audio/MIDI.
+- [ ] Décrire la compilation depuis un clone propre et les commandes de vérification.
+- [ ] Vérifier les liens, captures et instructions du README depuis un environnement vierge.
 
-**Sortie attendue :** un contributeur peut installer les dépendances, compiler et lancer VMPK à partir du README.
+**Critères de sortie :** un contributeur peut installer les prérequis, compiler, lancer et diagnostiquer VMPK sans information implicite.
 
 ## Phase 3 — Tests et qualité (P1)
 
-- [ ] Cartographier les composants testables et les tests déjà présents.
-- [ ] Ajouter des tests unitaires aux fonctions isolables du matériel MIDI (mapping, transposition, paramètres).
-- [ ] Tester la persistance des préférences et mappings clavier.
-- [ ] Couvrir MIDI thru, connexions et contrôleurs lorsque l’architecture le permet.
-- [ ] Documenter les tests manuels nécessitant un périphérique MIDI.
-- [ ] Corriger les warnings sans modifier le comportement, par petites PR.
+- [ ] Inventorier les tests, composants testables et zones sans couverture.
+- [ ] Définir une matrice de tests Linux/Windows/macOS et Qt supportés.
+- [ ] Ajouter des tests unitaires aux fonctions isolables : mapping clavier, transposition, paramètres et conversions.
+- [ ] Tester la persistance des préférences, mappings et connexions MIDI.
+- [ ] Couvrir MIDI thru, contrôleurs et changements de périphérique lorsque l'architecture le permet.
+- [ ] Documenter les tests manuels nécessitant un clavier/périphérique MIDI physique ou un port virtuel.
+- [ ] Activer des contrôles statiques/formatage uniquement s'ils sont compatibles avec le style existant et ne génèrent pas de bruit.
+- [ ] Corriger les warnings pertinents par petites PR, sans changement fonctionnel involontaire.
 
-**Sortie attendue :** chaque changement fonctionnel dispose d’une validation reproductible.
+**Critères de sortie :** les régressions courantes sont détectées automatiquement et les tests matériels sont reproductibles avec une procédure claire.
 
-## Phase 4 — Bugs et fonctionnalités TODO upstream (P2)
+## Phase 4 — Bugs et fonctionnalités (P2)
 
-Les éléments ci-dessous proviennent de la liste TODO existante. Leur priorité doit être confirmée par l’usage, les issues upstream et la complexité technique.
+Aucune fonctionnalité ne démarre avant vérification des issues, discussions et TODO upstream. Prioriser selon l'impact utilisateur, la demande réelle, le coût et les risques MIDI.
 
-1. [ ] Support cohérent des lettres majuscules/minuscules dans le mapping clavier.
-2. [ ] Génération d’accords.
-3. [ ] Arpeggiator.
-4. [ ] Lecture de fichiers MIDI.
-5. [ ] Séparation des canaux MIDI.
-6. [ ] Séparation des points de note.
-7. [ ] Support des accordéons chromatiques à cinq rangées.
+Ordre de présélection (à confirmer après audit des issues) :
 
-Pour chaque fonctionnalité :
-- rechercher les issues/discussions upstream et l’implémentation existante;
-- définir les interactions UI, le comportement MIDI et les cas limites;
-- proposer une PR autonome;
-- ajouter tests ou scénario manuel;
-- documenter toute divergence par rapport à upstream.
+1. [ ] Corriger les bugs confirmés et faciles à reproduire.
+2. [ ] Support cohérent des majuscules/minuscules dans les mappings clavier.
+3. [ ] Séparation des canaux MIDI.
+4. [ ] Séparation des points de note.
+5. [ ] Génération d'accords.
+6. [ ] Arpeggiator.
+7. [ ] Lecture de fichiers MIDI.
+8. [ ] Support des accordéons chromatiques à cinq rangées.
+
+Pour chaque élément :
+- retrouver l'issue ou confirmer qu'il s'agit toujours d'un besoin ;
+- définir le comportement attendu et les cas limites ;
+- vérifier l'architecture existante et les solutions upstream ;
+- proposer une PR indépendante ;
+- ajouter tests automatisés et/ou scénario manuel ;
+- mettre à jour l'aide et les traductions concernées.
 
 ## Phase 5 — UX, clavier et traductions (P2/P3)
 
-- [ ] Vérifier l’accessibilité clavier, le focus et les raccourcis.
-- [ ] Vérifier les mappings internationaux (AZERTY/QWERTY et autres dispositions).
-- [ ] Améliorer la lisibilité des touches et états MIDI sans dégrader les performances.
-- [ ] Évaluer les améliorations visuelles des touches uniquement si elles apportent un bénéfice clair.
-- [ ] Maintenir les traductions Qt Linguist et les préférences existantes.
+- [ ] Vérifier focus, navigation clavier, raccourcis et accessibilité.
+- [ ] Tester AZERTY, QWERTY et autres dispositions internationales.
+- [ ] Améliorer la lisibilité des touches et des états MIDI sans dégrader les performances.
+- [ ] Vérifier les interactions souris/tactile et les états visuels.
+- [ ] Maintenir les traductions Qt Linguist et éviter les chaînes codées en dur.
+- [ ] Préserver les préférences et raccourcis existants lors des évolutions UI.
+
+**Critères de sortie :** UX cohérente sur les plateformes, mappings fiables et traductions à jour.
 
 ## Phase 6 — Maintenance et releases (P3)
 
-- [ ] Définir une stratégie de synchronisation avec upstream.
-- [ ] Documenter les changements spécifiques au miroir.
-- [ ] Préparer les notes de version pour les changements significatifs.
-- [ ] Publier une release uniquement après validation CI et contrôle des dépendances.
-- [ ] Maintenir une checklist de release et un plan de retour arrière.
+- [ ] Définir la stratégie de synchronisation avec upstream et la gestion des divergences.
+- [ ] Documenter les changements propres au miroir et leurs raisons.
+- [ ] Définir les versions supportées et la politique de mise à jour des dépendances.
+- [ ] Préparer une checklist de release : tests, notes, licences, artefacts, sommes de contrôle et installation.
+- [ ] Tester la procédure de publication sur une préversion avant release stable.
+- [ ] Prévoir un plan de retour arrière et l'archivage des artefacts.
 
-## Ordre d’exécution recommandé
+**Critères de sortie :** une release peut être reproduite, vérifiée, installée et corrigée sans improvisation.
 
-1. Valider la PR #1 et la cohérence des dépendances.
-2. Auditer CI et packaging.
-3. Corriger les problèmes de build reproductibles.
-4. Améliorer documentation et installation.
-5. Introduire tests de non-régression.
-6. Traiter les fonctionnalités TODO une par une, en commençant par les petites et les plus demandées.
+## Procédure de suivi automatique
 
-## Critères d’acceptation d’une PR
+À chaque cycle de suivi :
 
-- Problème et périmètre clairement décrits.
-- Diff minimal et revue des impacts.
-- Build/tests pertinents exécutés.
-- CI vérifiée; échecs externes expliqués.
-- Documentation ou notes de changement mises à jour si nécessaire.
-- Compatibilité upstream évaluée.
+1. Lire cette roadmap et relever la première tâche non terminée dont les dépendances sont satisfaites.
+2. Vérifier l'état GitHub (issues, PR, commits, CI et artefacts) avant d'agir.
+3. Si un job est en cours ou en attente, surveiller et diagnostiquer ; ne pas créer de commits inutiles qui relancent la CI.
+4. Si une correction autonome et sûre est possible, la préparer dans une branche/PR dédiée avec tests. Ne jamais fusionner automatiquement.
+5. Si une action locale, une permission ou un périphérique physique est requis, signaler le blocage précisément et poursuivre les tâches indépendantes.
+6. Après chaque résultat vérifié, mettre à jour les cases et le tableau de bord avec la preuve (PR, commit, run ou procédure).
+7. Rapporter en français : terminé, en cours, bloqué, prochaine tâche et lien direct.
+
+## Critères communs d'acceptation d'une PR
+
+- Objectif, périmètre et risque clairement décrits.
+- Diff minimal, relu et sans fichier généré inutile.
+- Tests pertinents exécutés ; limites des tests matériels explicites.
+- CI vérifiée sur toutes les cibles concernées ; un statut en attente n'est jamais assimilé à un succès.
+- Documentation et traductions mises à jour si nécessaire.
+- Compatibilité upstream, licence et attribution contrôlées.
+- Aucune fusion avant validation complète et revue.
 
 ---
 
-Cette roadmap est un plan de travail évolutif, pas un engagement de livraison. Les fonctionnalités TODO ne seront développées qu’après vérification du besoin et de leur pertinence par rapport à upstream.
-
-
-## Point de vigilance CI : accès aux artefacts Drumstick
-
-Les workflows Linux, Windows MSVC, Windows MSYS2 et macOS récupèrent des artefacts du dépôt upstream `pedrolcl/drumstick` avec l’action `dawidd6/action-download-artifact`. Ils référencent le secret `GH_PAT`.
-
-- [ ] Vérifier dans les paramètres GitHub du dépôt que le secret `GH_PAT` est défini, valide et autorisé à lire les artefacts du dépôt upstream.
-- [ ] Confirmer que les noms d’artefacts et les noms de workflows upstream correspondent aux versions publiées.
-- [ ] En cas d’échec CI, distinguer clairement l’échec d’authentification/téléchargement de l’échec de compilation VMPK.
-- [ ] Ne jamais remplacer ce secret par un jeton public ou exposer sa valeur dans les logs.
-- [ ] Étudier à terme une méthode de récupération d’artefacts plus robuste (release upstream ou dépendance versionnée), sans compromettre la sécurité ni la reproductibilité.
-
-À la date de cet audit, l’API GitHub du dépôt ne retourne aucune exécution récente des workflows. Cela ne prouve pas à lui seul que les workflows sont mal configurés : vérifier aussi leur activation et les permissions Actions dans les paramètres du dépôt.
+Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après validation factuelle ; les priorités peuvent changer si un bug bloquant ou une demande upstream importante apparaît.
