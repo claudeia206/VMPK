@@ -61,7 +61,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v27
       with:
         name: ${{env.DRUMSTICKNAME}}-msys2-${{matrix.sys}}.tar.gz
-        github_token: ${{secrets.GH_PAT}}
+        github_token: ${{ secrets.GH_PAT || github.token }}
         repo: pedrolcl/drumstick
         allow_forks: false
         workflow: win-msys.yml
