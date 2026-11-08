@@ -40,9 +40,9 @@
 - [x] Établir une roadmap en phases avec critères de sortie.
 - [x] Finaliser la [PR #1](https://github.com/claudeia206/VMPK/pull/1) : fusion squash le 07/11/2026, commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2).
 - [x] Linux x86_64 : **success** sur le runner self-hosted Linux Mint `linux-UX303LA` ([run PR #1](https://github.com/claudeia206/VMPK/actions/runs/42338619625), job 128301115613).
-- [x] Linux ARM64 : **success** sur runner GitHub `ubuntu-24.04-arm` ([run PR #1](https://github.com/claudeia/ VMPK/actions/runs/42338619625), job 128301115414).
-- [x] Windows MSVC ([run](https://github.com/claudeia/ VMPK/actions/runs/42338619573)), Windows MSYS2 ([run](https://github.com/claudeia/ VMPK/actions/runs/42338619619)) et macOS ([run](https://github.com/claudeia/ VMPK/actions/runs/42338619626)) : tous les jobs requis terminés en **success** sur le head `b70b9ab`.
-- [x] Examiner les logs de la PR #1 : aucun échec dans les runs finaux retenus. Les échecs de la PR #2 du 07/11 sont distincts et proviennent de son ancien base : `Input required and not supplied: github_token` dans les workflows non mis à jour.
+- [x] Linux ARM64 : **success** sur runner GitHub `ubuntu-24.04-arm` ([run PR #1](https://github.com/claudeia206/VMPK/actions/runs/42338619625), job 128301115414).
+- [x] Windows MSVC ([run](https://github.com/claudeia206/VMPK/actions/runs/42338619573)), Windows MSYS2 ([run](https://github.com/claudeia206/VMPK/actions/runs/42338619619)) et macOS ([run](https://github.com/claudeia206/VMPK/actions/runs/42338619626)) : tous les jobs requis terminés en **success** sur le head `b70b9ab`.
+- [x] Examiner les logs de la PR #1 : aucun échec dans les runs finaux retenus. Les échecs de la PR #2 du 07/11 sont distincts et proviennent de son ancienne base : `Input required and not supplied: github_token` dans les workflows non mis à jour.
 - [x] Vérifier les artefacts CI : Linux x86_64/ARM64 AppDir + AppImage, Windows MSVC x64/ARM64 installeurs, macOS x86_64/ARM64 ZIP. Inspection de structure effectuée sur AppDir tar.gz, AppImage ELF, installeur NSIS PE et bundle macOS ZIP. **L'installation/lancement réel reste à tester** en Phase 1.
 - [x] Relire le diff de la PR #1 : changements CI ciblés, pas de changement fonctionnel VMPK.
 
