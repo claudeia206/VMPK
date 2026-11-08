@@ -27,8 +27,8 @@
 
 | Domaine | Priorité | État | Condition de sortie |
 |---|---:|---|---|
-| Stabilisation de la PR #1 et CI multiplateforme | P0 | En cours | Linux x86_64 + ARM64 verts ; autres jobs examinés ; revue terminée |
-| Cohérence des workflows et dépendances | P0 | En cours | Téléchargements, versions, permissions et packaging reproductibles |
+| Stabilisation de la PR #1 et CI multiplateforme | P0 | Terminée le 07/11/2026 | PR #1 fusionnée ; Linux x86_64/ARM64, Windows MSVC/MSYS2 et macOS verts |
+| Cohérence des workflows et dépendances | P0 | En cours | Déclencheurs et versions audités ; pin Drumstick Linux en validation CI ; dépendances Windows/macOS encore basées sur upstream `devel` |
 | Documentation d'installation et dépannage | P1 | À faire | Procédure testée sur les plateformes prises en charge |
 | Tests de non-régression | P1 | À faire | Tests automatisés utiles + scénarios manuels documentés |
 | Bugs et fonctionnalités demandées | P2 | À planifier | Priorité confirmée par issues et faisabilité |
@@ -38,22 +38,24 @@
 ## Phase 0 — Stabilisation et état des lieux (P0)
 
 - [x] Établir une roadmap en phases avec critères de sortie.
-- [ ] Finaliser la PR #1 : construction locale de Drumstick sur Linux et correction des téléchargements Windows/macOS.
-- [ ] Obtenir un résultat terminal **success** pour Linux x86_64 sur le runner Linux Mint self-hosted.
-- [x] Vérifier Linux ARM64 : le dernier résultat connu est vert.
-- [ ] Attendre et vérifier les résultats finaux Windows MSVC, Windows MSYS2 et macOS.
-- [ ] Examiner les logs de chaque job échoué ; distinguer problème de runner, téléchargement, dépendance, configuration, compilation et packaging.
-- [ ] Vérifier les artefacts réellement produits et leur contenu ; ne pas considérer un simple upload comme preuve d'installation fonctionnelle.
-- [ ] Comparer le diff de la PR avec `devel`, vérifier qu'il reste limité au problème CI et relire les workflows modifiés.
+- [x] Finaliser la [PR #1](https://github.com/claudeia206/VMPK/pull/1) : fusion squash le 07/11/2026, commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2).
+- [x] Linux x86_64 : **success** sur le runner self-hosted Linux Mint `linux-UX303LA` ([run PR #1](https://github.com/claudeia206/VMPK/actions/runs/42338619625), job 128301115613).
+- [x] Linux ARM64 : **success** sur runner GitHub `ubuntu-24.04-arm` ([run PR #1](https://github.com/claudeia/ VMPK/actions/runs/42338619625), job 128301115414).
+- [x] Windows MSVC ([run](https://github.com/claudeia/ VMPK/actions/runs/42338619573)), Windows MSYS2 ([run](https://github.com/claudeia/ VMPK/actions/runs/42338619619)) et macOS ([run](https://github.com/claudeia/ VMPK/actions/runs/42338619626)) : tous les jobs requis terminés en **success** sur le head `b70b9ab`.
+- [x] Examiner les logs de la PR #1 : aucun échec dans les runs finaux retenus. Les échecs de la PR #2 du 07/11 sont distincts et proviennent de son ancien base : `Input required and not supplied: github_token` dans les workflows non mis à jour.
+- [x] Vérifier les artefacts CI : Linux x86_64/ARM64 AppDir + AppImage, Windows MSVC x64/ARM64 installeurs, macOS x86_64/ARM64 ZIP. Inspection de structure effectuée sur AppDir tar.gz, AppImage ELF, installeur NSIS PE et bundle macOS ZIP. **L'installation/lancement réel reste à tester** en Phase 1.
+- [x] Relire le diff de la PR #1 : changements CI ciblés, pas de changement fonctionnel VMPK.
+
+**Preuves post-fusion :** [Linux](https://github.com/claudeia206/VMPK/actions/runs/42346786840) · [Windows MSVC](https://github.com/claudeia206/VMPK/actions/runs/42346786874) · [Windows MSYS2](https://github.com/claudeia206/VMPK/actions/runs/42346786828) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/42346787053) — tous **success** sur `devel` au commit de fusion.
 
 **Critères de sortie :** les jobs requis sont terminés, les cibles Linux x86_64 et ARM64 sont vertes, les autres plateformes sont vertes ou leurs limites sont explicitement documentées ; la PR est prête pour revue. Aucune fusion automatique.
 
 ## Phase 1 — CI, compilation et packaging (P0)
 
-- [ ] Vérifier les workflows déclenchés sur PR, push, tags et branches ; contrôler les permissions minimales.
-- [ ] Vérifier les versions de Qt, CMake, compilateurs et Drumstick sur chaque plateforme.
-- [ ] Vérifier la construction de Drumstick depuis une source/version déterministe sur Linux.
-- [ ] Vérifier que les workflows Windows et macOS téléchargent le bon artefact upstream et disposent d'un fallback de jeton limité.
+- [x] Auditer les déclencheurs et permissions : workflows Linux/Windows/macOS sur push et PR vers `devel`/`master`, plus `workflow_dispatch` ; aucun déclencheur de tag n'est configuré (à prévoir dans la future procédure de release). Les logs CI montrent un `GITHUB_TOKEN` en lecture seule ; le workflow `pull_request_target` de vérification de branche ne checkout aucun code et n'effectue aucune écriture.
+- [x] Vérifier les versions déclarées : CMake 4.4.x, C++17, Drumstick 2.11.2 ; Qt Linux 6.11.1 (épinglé temporairement), Windows MSVC 6.10.3, macOS 6.8.3, Qt 6 fourni par MSYS2. Les versions Qt ne sont pas uniformes entre plateformes.
+- [ ] Vérifier la construction de Drumstick depuis une source/version déterministe sur Linux. La CI précédente clone la branche mobile `devel` ; cette PR propose de la fixer au commit upstream `23da19d05ad511bd9140a2d00eedead2ae5bac1a` (version CMake 2.11.2), sous réserve de validation CI.
+- [x] Vérifier les workflows Windows/macOS : artefacts téléchargés depuis `pedrolcl/drumstick`, workflow/branche identifiés et fallback `${{ secrets.GH_PAT || github.token }}` présent. Les builds PR #1 ont réussi ; la sélection de l'artefact reste basée sur upstream `devel` et n'est pas encore reproductible au niveau du run.
 - [ ] Vérifier les chemins d'installation, les bibliothèques partagées, plugins Qt et dépendances MIDI au runtime.
 - [ ] Tester l'installation/lancement des paquets produits, pas seulement leur génération.
 - [ ] Réduire les duplications YAML et ajouter des timeouts/cache seulement si cela améliore fiabilité ou durée sans masquer les erreurs.
