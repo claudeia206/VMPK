@@ -81,7 +81,7 @@ jobs:
 
     - name: '${{ matrix.icon }} Build Drumstick from source'
       run: |
-        # Pin Drumstick to the exact upstream revision validated by the previous green CI.
+        # Pin Drumstick to a fixed upstream commit (CMake version 2.11.2); validate this SHA in this PR's CI.
         DRUMSTICK_REVISION=23da19d05ad511bd9140a2d00eedead2ae5bac1a
         git init Drumstick-source
         git -C Drumstick-source remote add origin https://github.com/pedrolcl/drumstick.git
