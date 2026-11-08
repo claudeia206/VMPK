@@ -81,7 +81,13 @@ jobs:
 
     - name: '${{ matrix.icon }} Build Drumstick from source'
       run: |
-        git clone --depth 1 --branch devel https://github.com/pedrolcl/drumstick.git Drumstick-source
+        # Pin Drumstick to a fixed upstream commit (CMake version 2.11.2); validate this SHA in this PR's CI.
+        DRUMSTICK_REVISION=23da19d05ad511bd9140a2d00eedead2ae5bac1a
+        git init Drumstick-source
+        git -C Drumstick-source remote add origin https://github.com/pedrolcl/drumstick.git
+        git -C Drumstick-source fetch --depth 1 origin "$DRUMSTICK_REVISION"
+        git -C Drumstick-source checkout --detach FETCH_HEAD
+        test "$(git -C Drumstick-source rev-parse HEAD)" = "$DRUMSTICK_REVISION"
         cmake ${{ steps.vcpkg.outputs.vcpkg-cmake-config }} \
           -S Drumstick-source \
           -B Drumstick-build \
