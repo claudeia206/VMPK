@@ -1,4 +1,5 @@
 name: Check pull request branch
+
 on:
   pull_request_target:
     types:
@@ -7,13 +8,20 @@ on:
       - synchronize
       - edited
 
+# This workflow only reads PR branch metadata; it needs no repository token permissions.
+permissions: {}
+
 jobs:
   check-branches:
     runs-on: ubuntu-latest
     steps:
       - name: Check branches
+        env:
+          PR_HEAD_REF: ${{ github.head_ref }}
+          PR_BASE_REF: ${{ github.base_ref }}
+        shell: bash
         run: |
-          if [ ${{ github.head_ref }} != "devel" ] && [ ${{ github.base_ref }} == "master" ]; then
+          if [[ "$PR_HEAD_REF" != "devel" && "$PR_BASE_REF" == "master" ]]; then
             echo "Merge requests to master branch are only allowed from devel branch."
             exit 1
           fi
