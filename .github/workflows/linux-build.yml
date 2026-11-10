@@ -52,7 +52,8 @@ jobs:
           libsndfile1-dev \
           python3-venv \
           python3.12-venv \
-          libltdl-dev
+          libltdl-dev \
+          xvfb
 
     - name: '${{ matrix.icon }} Set up CMake'
       uses: jwlawson/actions-setup-cmake@v2
@@ -119,6 +120,13 @@ jobs:
       env:
         DESTDIR: ${{github.workspace}}/build/vmpk-v${{steps.configuration.outputs.config_version}}-${{matrix.arch}}.AppDir
       run: cmake --install ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: '${{ matrix.icon }} Smoke-test installed AppDir'
+      env:
+        APPDIR: ${{github.workspace}}/build/vmpk-v${{steps.configuration.outputs.config_version}}-${{matrix.arch}}.AppDir
+      run: |
+        test -x "$APPDIR/usr/bin/vmpk"
+        xvfb-run -a "$APPDIR/usr/bin/vmpk" --version
 
     - name: '${{ matrix.icon }} Archive'
       env:
