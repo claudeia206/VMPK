@@ -1,6 +1,6 @@
 # Matrice CI et reproductibilité
 
-> État vérifié le **9 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel.
+> État vérifié le **10 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel.
 
 ## Matrice de compilation
 
@@ -30,7 +30,7 @@ Les workflows de compilation Linux, Windows MSVC, Windows MSYS2 et macOS déclar
 - `pull_request` vers `devel` et `master` ;
 - `workflow_dispatch`.
 
-Le workflow `check-branches.yml` utilise `pull_request_target` pour contrôler la relation branches source/cible. Il ne checkout pas le code de la PR et n'exécute pas de commande issue de celle-ci.
+Le workflow `check-branches.yml` utilise `pull_request_target` pour contrôler la relation branches source/cible. Il ne checkout pas le code de la PR et n'exécute pas de commande issue de celle-ci. La PR #5 propose en plus `permissions: {}` et le passage des refs via des variables d'environnement ; le workflow sur `devel` n'intègre pas encore cette correction.
 
 **Limite d'audit :** les fichiers workflow ne déclarent pas de bloc `permissions:` explicite. La configuration des permissions par défaut du dépôt n'est pas vérifiable depuis ces seuls fichiers. Le contrôle des permissions minimales reste donc ouvert ; ne pas conclure que les permissions sont minimales uniquement parce qu'un run a réussi.
 
@@ -41,6 +41,8 @@ Pour les téléchargements d'artefacts Drumstick Windows/macOS, les workflows ut
 - [PR #1](https://github.com/claudeia206/VMPK/pull/1), head `b70b9ab` : Linux x86_64 et ARM64, Windows MSVC, Windows MSYS2 et macOS terminés en **success**. [Linux](https://github.com/claudeia206/VMPK/actions/runs/42338619625) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/42338619573) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/42338619619) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/42338619626).
 - [PR #2](https://github.com/claudeia206/VMPK/pull/2), head `d461603` : Linux ARM64, Windows MSVC, Windows MSYS2 et macOS réussis. Linux x86_64 a été **cancelled** après 24 h d'attente sans runner attribué : [run Linux](https://github.com/claudeia206/VMPK/actions/runs/42461423279), job `128671328713`, label `self-hosted`, `runner_id=0`, nom vide, aucune étape.
 - [PR #3](https://github.com/claudeia206/VMPK/pull/3), head `6d6472b` : Linux ARM64, Windows MSVC, Windows MSYS2 et macOS réussis. Linux x86_64 a été **cancelled** après 24 h d'attente sans runner attribué : [run Linux](https://github.com/claudeia206/VMPK/actions/runs/42461626903), job `128671944410`, label `self-hosted`, `runner_id=0`, nom vide, aucune étape.
+- [PR #4](https://github.com/claudeia206/VMPK/pull/4), head `65c5fb8` : Linux ARM64, Windows MSVC, MSYS2 et macOS **success** ; artefacts ARM64 AppDir/AppImage, MSVC x64/ARM64 (installations + installeurs) et ZIP macOS x86_64/ARM64 présents. Linux x86_64 **failure** pendant l'étape `VCPKG Build` ([run](https://github.com/claudeia206/VMPK/actions/runs/42588964777), job `129065572750)). Les logs sont inaccessibles : l'API renvoie `404 BlobNotFound`, et l'étape est encore signalée `in_progress` malgré la conclusion `failure`. La cause reste inconnue ; aucun artefact x86_64.
+- [PR #5](https://github.com/claudeia206/VMPK/pull/5), head `b8b7750` : Linux ARM64, Windows MSVC, MSYS2 et macOS **success** ; artefacts ARM64 AppDir/AppImage, MSVC x64/ARM64 et ZIP macOS x86_64/ARM64 présents. Linux x86_64 **queued** ([run](https://github.com/claudeia206/VMPK/actions/runs/42589015261), job `129065748333`), sans étape ni runner indiqué. Le contrôle `pull_request_target` est vert mais exécute le workflow de la branche de base ; la modification de PR #5 n'est donc pas encore validée par ce contrôle.
 
 Ces annulations ne sont **pas** des échecs de compilation ni des succès : le job n'a pas commencé et aucun log de build n'existe. GitHub n'a pas attribué de runner self-hosted à ces jobs. L'état local du service systemd ne peut pas être contrôlé depuis le dépôt.
 
