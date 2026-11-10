@@ -28,7 +28,7 @@
 | Domaine | Priorité | État | Condition de sortie |
 |---|---:|---|---|
 | PR #1 et CI de référence | P0 | Terminée (07/11/2026) | PR #1 fusionnée ; CI verte sur Linux x86_64/ARM64, Windows MSVC/MSYS2 et macOS |
-| Cohérence CI et dépendances | P0 | En cours / runner bloqué | Pin Drumstick Linux en PR #3 ; x86_64 self-hosted sans runner attribué sur PR #2/#3 ; permissions explicites à auditer |
+| Cohérence CI et dépendances | P0 | En cours / validation x86_64 incomplète | Pin Drumstick validé sur ARM64 seulement ; PR #4 Linux x86_64 en échec sans logs exploitables ; PR #5 x86_64 en attente ; audit des permissions à terminer |
 | Documentation d'installation et dépannage | P1 | En cours | Matrice CI documentée dans [PR #4](https://github.com/claudeia206/VMPK/pull/4) ; guide installation/MIDI encore à faire |
 | Tests de non-régression | P1 | À faire | Tests automatisés utiles + scénarios manuels documentés |
 | Bugs et fonctionnalités demandées | P2 | À planifier | Priorité confirmée par issues et faisabilité |
@@ -46,10 +46,12 @@
 - [x] Inspecter structurellement les artefacts de PR #1 : AppDir/AppImage Linux, installeurs MSVC x64/ARM64 et ZIP macOS x86_64/ARM64. L'installation/lancement réel reste une tâche Phase 1.
 - [x] Relire le diff de la PR #1 : changements CI ciblés, sans changement fonctionnel VMPK.
 
-### Suivi CI des PR ouvertes (09/11/2026)
+### Suivi CI des PR ouvertes (10/11/2026)
 
 - [PR #2](https://github.com/claudeia206/VMPK/pull/2), head `d46160390f7ee4b4ff2abbbef26b4dbb21281f90` : Linux ARM64, Windows MSVC x64/ARM64, MSYS2 ucrt64/clang64/clangarm64 et macOS x86_64/ARM64 **success**. Linux x86_64 **cancelled** après 24 h d'attente ; job `128671328713`, label `self-hosted`, `runner_id=0`, aucun runner nommé ni aucune étape ([run](https://github.com/claudeia206/VMPK/actions/runs/42461423279)).
 - [PR #3](https://github.com/claudeia206/VMPK/pull/3), head `6d6472b1acfb68c68de068489e1ddb3dd6536d39` : Linux ARM64, Windows MSVC x64/ARM64, MSYS2 et macOS x86_64/ARM64 **success**. Linux x86_64 **cancelled** après 24 h d'attente sans runner attribué ; job `128671944410`, label `self-hosted`, `runner_id=0`, aucune étape ([run](https://github.com/claudeia206/VMPK/actions/runs/42461626903)).
+- [PR #4](https://github.com/claudeia206/VMPK/pull/4), head `65c5fb8b0d72421a7de90dacb3b42aa8447da648) : Linux ARM64 **success** avec AppDir/AppImage ; Windows MSVC, Windows MSYS2 et macOS **success** avec artefacts MSVC x64/ARM64 et ZIP macOS x86_64/ARM64. Linux x86_64 **failure** ([run](https://github.com/claudeia206/VMPK/actions/runs/42588964777), job `129065572750)). Les étapes indiquent que le job s'est arrêté pendant `VCPKG Build`, mais l'étape apparaît encore `in_progress` et le téléchargement des logs renvoie `404 BlobNotFound` ; **la cause n'est pas démontrée**. Aucun artefact x86_64.
+- [PR #5](https://github.com/claudeia206/VMPK/pull/5), head `b8b77500ba7e69ffe8659f9c2f930600b0f7fc49) : Linux ARM64 **success** avec AppDir/AppImage ; Windows MSVC, Windows MSYS2 et macOS **success** avec leurs artefacts. Linux x86_64 reste **queued** ([run](https://github.com/claudeia206/VMPK/actions/runs/42589015261), job `129065748333)) ; aucun runner n'est indiqué dans le résultat du job, aucune étape n'a commencé. Le workflow `pull_request_target` retourne success, mais GitHub exécute la version de base du workflow : cela ne valide pas le fichier modifié dans cette PR.
 - Ces annulations ne sont pas des échecs de compilation ni des succès. Aucun log de build n'existe pour les jobs x86_64 annulés. Le runner self-hosted n'a pas été attribué par GitHub ; état systemd local à vérifier manuellement.
 
 **Action locale requise si le runner reste indisponible :**
@@ -64,7 +66,7 @@ sudo journalctl -u actions.runner.claudeia206-VMPK.linux-UX303LA.service -n 80 -
 - [x] Auditer les déclencheurs : workflows Linux/Windows/macOS sur push et PR vers `devel`/`master`, plus `workflow_dispatch` ; aucun déclencheur de tag n'est présent. Le workflow `pull_request_target` vérifie seulement les branches, sans checkout ni commande provenant de la PR.
 - [ ] Déclarer et vérifier les permissions minimales explicites : les fichiers workflow ne contiennent pas de bloc `permissions:`, et les paramètres par défaut du dépôt ne sont pas accessibles dans cet audit.
 - [x] Relever les versions et les écarts entre plateformes ; la matrice est documentée dans [docs/CI-BUILD-MATRIX.md](docs/CI-BUILD-MATRIX.md) (PR #4). Qt 5 est disponible via `USE_QT5` dans CMake mais non testé par les workflows CI actuels.
-- [ ] Vérifier la construction de Drumstick depuis une source/version déterministe sur Linux.
+- [ ] Vérifier la construction de Drumstick depuis une source/version déterministe sur Linux. Le commit upstream fixe `23da19d05ad511bd9140a2d00eedead2ae5bac1a` est compilé avec succès sur ARM64 dans le run Linux de la PR #3 ; la validation x86_64 reste bloquée (job annulé sans runner attribué), et le run x86_64 de PR #4 a échoué sans logs récupérables.
 - [x] Vérifier les sources d'artefacts Drumstick Windows/macOS et le fallback `${{ secrets.GH_PAT || github.token }}` ; les builds PR #1 sont verts. La sélection upstream `devel` reste mobile et donc non reproductible au niveau du run.
 - [ ] Vérifier les chemins d'installation, les bibliothèques partagées, plugins Qt et dépendances MIDI au runtime.
 - [ ] Tester l'installation/lancement des paquets produits, pas seulement leur génération.
