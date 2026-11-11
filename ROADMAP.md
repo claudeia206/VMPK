@@ -27,7 +27,7 @@
 
 | Domaine | Priorité | État | Condition de sortie |
 |---|---:|---|---|
-| Stabilisation de la PR #1 et CI multiplateforme | P0 | En cours | Linux x86_64 + ARM64 verts ; autres jobs examinés ; revue terminée |
+| Stabilisation de la PR #1 et CI de référence | P0 | Terminée | PR #1 fusionnée ; Linux x86_64/ARM64 et Windows/macOS validés sur le head `b70b9ab` |
 | Cohérence des workflows et dépendances | P0 | En cours | Téléchargements, versions, permissions et packaging reproductibles |
 | Documentation d'installation et dépannage | P1 | À faire | Procédure testée sur les plateformes prises en charge |
 | Tests de non-régression | P1 | À faire | Tests automatisés utiles + scénarios manuels documentés |
@@ -38,15 +38,25 @@
 ## Phase 0 — Stabilisation et état des lieux (P0)
 
 - [x] Établir une roadmap en phases avec critères de sortie.
-- [ ] Finaliser la PR #1 : construction locale de Drumstick sur Linux et correction des téléchargements Windows/macOS.
-- [ ] Obtenir un résultat terminal **success** pour Linux x86_64 sur le runner Linux Mint self-hosted.
-- [x] Vérifier Linux ARM64 : le dernier résultat connu est vert.
-- [ ] Attendre et vérifier les résultats finaux Windows MSVC, Windows MSYS2 et macOS.
-- [ ] Examiner les logs de chaque job échoué ; distinguer problème de runner, téléchargement, dépendance, configuration, compilation et packaging.
-- [ ] Vérifier les artefacts réellement produits et leur contenu ; ne pas considérer un simple upload comme preuve d'installation fonctionnelle.
-- [ ] Comparer le diff de la PR avec `devel`, vérifier qu'il reste limité au problème CI et relire les workflows modifiés.
+- [x] Finaliser la PR #1 : construction locale de Drumstick sur Linux et correction des téléchargements Windows/macOS ; fusion squash `295fd10` après validation complète.
+- [x] Linux x86_64 : **success** sur le runner Linux Mint self-hosted ; [run 42338619625](https://github.com/claudeia206/VMPK/actions/runs/42338619625).
+- [x] Linux ARM64 : **success** ; [run 42338619625](https://github.com/claudeia206/VMPK/actions/runs/42338619625).
+- [x] Windows MSVC, Windows MSYS2 et macOS : tous les jobs du head PR #1 en **success** ; [MSVC](https://github.com/claudeia206/VMPK/actions/runs/42338619573), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/42338619619), [macOS](https://github.com/claudeia206/VMPK/actions/runs/42338619626).
+- [x] Examiner les jobs PR #1 : aucun job en échec, tous les steps de build/install/package sont **success** ; les annulations et échecs des PR suivantes sont suivis séparément.
+- [x] Vérifier la présence et la structure des artefacts PR #1 : AppDir/AppImage Linux x86_64 et ARM64, installeurs MSVC et bundles macOS. Le test de lancement autonome reste traité en Phase 1.
+- [x] Comparer et relire le diff PR #1 (workflows CI et roadmap) ; commit fusionné [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2).
 
 **Critères de sortie :** les jobs requis sont terminés, les cibles Linux x86_64 et ARM64 sont vertes, les autres plateformes sont vertes ou leurs limites sont explicitement documentées ; la PR est prête pour revue. Aucune fusion automatique.
+
+
+### Suivi factuel — 11/11/2026
+
+- PR #1 est clôturée et fusionnée dans `devel` : [commit 295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Son head `fix/linux-local-midi-dependency` reste `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2`.
+- Les jobs Linux x86_64, Linux ARM64, Windows MSVC (x64/ARM64), Windows MSYS2 (ucrt64/clang64/clangarm64) et macOS (x86_64/ARM64) de PR #1 sont terminés en `success` ; artefacts présents dans le [run Linux](https://github.com/claudeia206/VMPK/actions/runs/42338619625) et les runs Windows/macOS ci-dessus.
+- PR #2 et PR #3 : Linux ARM64 et plateformes Windows/macOS validés ; Linux x86_64 a été `cancelled` sans runner attribué (`runner_id=0`, aucune étape), donc le pin Drumstick n'est pas encore validé x86_64.
+- PR #4 : Linux ARM64, Windows, MSYS2 et macOS ont réussi sur le head documentaire ; Linux x86_64 est resté `queued` sans runner. Un ancien run x86_64 a échoué, mais ses logs étaient indisponibles (`404 BlobNotFound`) et ne démontrent pas une cause de code.
+- PR #5 : Linux ARM64, Windows, MSYS2 et macOS ont réussi ; Linux x86_64 a été annulé sans runner attribué. Le run `pull_request_target` disponible utilise le workflow de la branche de base et ne valide pas directement le correctif de cette PR.
+- PR #6 : le smoke test ARM64 a révélé un défaut réel de RPATH. Le log [run 42784606828](https://github.com/claudeia206/VMPK/actions/runs/42784606828), job `129722593133`, montre `libdrumstick-widgets.so.2` présent dans l'AppDir mais un RPATH configuré à `\\/../lib` au lieu de `$ORIGIN/../lib`, car le shell développait `$ORIGIN`. La correction utilise maintenant des quotes simples autour de la valeur CMake et vérifie `ldd` sans `LD_LIBRARY_PATH`, puis lance le binaire avec les chemins Qt externes retirés. **Validation CI en attente** sur le nouveau head.
 
 ## Phase 1 — CI, compilation et packaging (P0)
 
