@@ -166,3 +166,11 @@ Pour chaque élément :
 ---
 
 Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après validation factuelle ; les priorités peuvent changer si un bug bloquant ou une demande upstream importante apparaît.
+
+
+### Suivi factuel — 12/11/2026
+
+- Sur le head PR #6 précédent `30b33360377c9f4c9cc6411602a158ae9d70bf80`, le [run Linux 42986186880](https://github.com/claudeia206/VMPK/actions/runs/42986186880) a terminé en `failure` sur ARM64 au step `Smoke-test installed AppDir` (job `130407805424`). Les étapes installation, compilation de Drumstick et VMPK étaient en `success`. Le log `ldd` montre précisément `libQt6Network.so.6 => not found`; l'archive et les uploads ont été ignorés. L'artefact Linux de ce run est donc absent.
+- Le job Linux x86_64 `130407805865` a terminé `cancelled` sans runner attribué ni étape exécutée ; les logs renvoient `404 BlobNotFound`. Aucune cause de compilation x86_64 ne peut être déduite.
+- Sur ce même head, Windows MSVC x64/ARM64, Windows MSYS2 (ucrt64/clang64/clangarm64) et macOS x86_64/ARM64 sont tous terminés en `success`. Les artefacts MSVC et macOS sont présents ; MSYS2 ne publie pas d'artefact.
+- Correction préparée dans cette PR : installer explicitement la cible importée `Qt6::Network` dans `CMAKE_INSTALL_LIBDIR` sous Linux, car le script de déploiement Qt n'a pas inclus ce module pourtant requis au runtime. Commit [d6e2943](https://github.com/claudeia206/VMPK/commit/d6e294309d2e5b6da5319d0f8a0b6167851ad5fd). **Cette correction n'est pas encore validée par CI ; la tâche de smoke test reste non cochée.**
