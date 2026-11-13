@@ -299,7 +299,7 @@ if (INSTALL_DEPENDENCIES AND QT_VERSION VERSION_GREATER_EQUAL 6.5)
     # DESTDIR-based AppDir installs include the versioned runtime library.
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND TARGET Qt6::Network)
         install(CODE
-            "file(COPY \"$<TARGET_FILE:Qt6::Network>\" DESTINATION \"\\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}\" FOLLOW_SYMLINK_CHAIN)"
+            "file(COPY \"$<TARGET_FILE:Qt6::Network>\" DESTINATION \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}\" FOLLOW_SYMLINK_CHAIN)"
         )
     endif()
 

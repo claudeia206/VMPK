@@ -183,3 +183,11 @@ Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après valida
 - Sur ce même head, MSVC ARM64 et macOS x86_64 ont réussi et leurs artefacts sont présents ; MSVC x64, macOS ARM64, MSYS2 ucrt64 et clang64 sont `cancelled` sans étapes, tandis que MSYS2 clangarm64 est `success`. Les jobs annulés ne sont pas comptés comme validés.
 - La commande `install(IMPORTED_RUNTIME_ARTIFACTS Qt6::Network)` peut ne copier que le lien SONAME lorsque la localisation importée est elle-même un lien symbolique. Un test CMake isolé avec CMake 3.31.6 a reproduit ce comportement. La correction proposée utilise `install(CODE ... file(COPY ... FOLLOW_SYMLINK_CHAIN)` afin de copier le lien et sa cible dans le chemin `DESTDIR` de l'AppDir. Le même test isolé a confirmé la présence du lien et du fichier versionné après installation.
 - Le smoke test affiche maintenant les liens et cibles `libQt6Network.so*` avant `ldd`, afin que le prochain échec éventuel fournisse le diagnostic du système de fichiers. **Cette nouvelle correction n'est pas encore validée par la CI VMPK.**
+
+
+### Suivi correctif — 13/11/2026
+
+- Sur le head `afe99591d99c3ae1f3d9a2709fd09ae863da02da`, le [run Linux 43392579496](https://github.com/claudeia206/VMPK/actions/runs/43392579496), job ARM64 `131775791467`, a échoué au step `Install` avant le smoke test. Cause démontrée dans le log : `file COPY cannot copy file .../libQt6Network.so.6.11.1 to /usr/lib/libQt6Network.so.6.11.1: Permission denied`. Le chemin `DESTDIR` n'était pas conservé dans le code d'installation généré ; la chaîne CMake contenait deux antislashs avant `$ENV{DESTDIR}`, ce qui faisait développer la variable trop tôt.
+- Le job Linux x86_64 `131775791040` reste `queued`, sans runner attribué ni étape exécutée. Aucun artefact Linux pour ce run.
+- Sur le même head, MSVC win64 et MSYS2 ucrt64/clang64 ont terminé en `success`; MSVC ARM64, MSYS2 clangarm64 et macOS x86_64 sont `in_progress`, macOS ARM64 est `success`. Les statuts en cours ne sont pas comptés comme validés.
+- Correction minimale : conserver un seul antislash avant `$ENV{DESTDIR}` dans la chaîne `install(CODE)`. Le test CMake isolé doit confirmer que le fichier versionné et le lien SONAME sont copiés sous le répertoire `DESTDIR`, jamais directement dans `/usr/lib`. **La nouvelle correction attend encore la CI VMPK.**
