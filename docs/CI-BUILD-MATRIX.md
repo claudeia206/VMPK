@@ -91,3 +91,12 @@ Qt Linux est temporairement épinglé à **6.11.1** : le workflow documente un p
 ### PR #7 — permissions Linux
 
 [PR #7](https://github.com/claudeia206/VMPK/pull/7) ajoute `permissions: contents: read` au workflow Linux uniquement. La CI doit confirmer que les étapes checkout/vcpkg n'ont pas besoin de permissions supplémentaires. Les autres workflows restent inchangés tant que les besoins du téléchargement upstream ne sont pas démontrés.
+
+
+### Mise à jour CI — 13/11/2026, après correction DESTDIR
+
+- PR #6 head `afe9959` : échec démontré à `Install`, car le code CMake tentait d'écrire dans `/usr/lib` (permission refusée) au lieu de `DESTDIR/usr/lib`. Correction d'un antislash en trop dans le code CMake, commit [0f5efef](https://github.com/claudeia206/VMPK/commit/0f5efef461c1406ede7ac168fc91f2206312a0bf).
+- Test isolé CMake 3.31.6 réussi : `FOLLOW_SYMLINK_CHAIN` installe le lien `libQt6Network.so.6` et son fichier versionné dans `DESTDIR/usr/lib`, sans toucher à `/usr/lib`.
+- Nouveau head PR #6 : [Linux](https://github.com/claudeia206/VMPK/actions/runs/43393381690) ARM64 `in_progress`, x86_64 `queued` sans runner ; [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43393381680), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43393381678) et [macOS](https://github.com/claudeia206/VMPK/actions/runs/43393381699) en cours/attente. Contrôle de branche `success`. Aucun artefact du nouveau head.
+- PR #7 : Linux ARM64 `in_progress` au step `VCPKG Build`, x86_64 `queued` sans runner ; Windows/MSYS2/macOS en cours. Les logs Linux sont indisponibles pour l'instant ; aucune conclusion sur les permissions réduites avant la fin de la CI.
+- PR #4 head documentaire : Linux ARM64 `in_progress`, x86_64 `queued` sans runner ; autres plateformes en cours. Les jobs en cours ou en attente ne sont pas des succès.
