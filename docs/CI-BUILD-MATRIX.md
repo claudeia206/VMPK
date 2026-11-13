@@ -1,6 +1,6 @@
 # Matrice CI et reproductibilité
 
-> État vérifié le **10 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel.
+> État vérifié le **13 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel.
 
 ## Matrice de compilation
 
@@ -32,7 +32,7 @@ Les workflows de compilation Linux, Windows MSVC, Windows MSYS2 et macOS déclar
 
 Le workflow `check-branches.yml` utilise `pull_request_target` pour contrôler la relation branches source/cible. Il ne checkout pas le code de la PR et n'exécute pas de commande issue de celle-ci. La PR #5 propose en plus `permissions: {}` et le passage des refs via des variables d'environnement ; le workflow sur `devel` n'intègre pas encore cette correction.
 
-**Limite d'audit :** les fichiers workflow ne déclarent pas de bloc `permissions:` explicite. La configuration des permissions par défaut du dépôt n'est pas vérifiable depuis ces seuls fichiers. Le contrôle des permissions minimales reste donc ouvert ; ne pas conclure que les permissions sont minimales uniquement parce qu'un run a réussi.
+**État au 13/11 :** les workflows de build sur `devel` ne déclarent pas de bloc `permissions:`. Le run Linux PR #1 exposait `Contents: read`, `Metadata: read`, `Packages: read`. La PR #7 propose `permissions: contents: read` pour Linux ; sa CI doit confirmer que vcpkg fonctionne avec ce périmètre réduit. PR #5 propose `permissions: {}` pour le contrôle de branches, mais le correctif n'est pas encore intégré dans `devel`. Les workflows Windows/MSYS2/macOS qui téléchargent des artefacts du dépôt upstream restent à auditer : ne pas ajouter `actions: read` ou d'autres droits sans preuve qu'ils sont nécessaires.
 
 Pour les téléchargements d'artefacts Drumstick Windows/macOS, les workflows utilisent le fallback `${{ secrets.GH_PAT || github.token }}`. Le secret `GH_PAT` n'est pas requis si le jeton intégré suffit, mais ses permissions effectives doivent rester limitées.
 
@@ -77,3 +77,17 @@ Qt Linux est temporairement épinglé à **6.11.1** : le workflow documente un p
 - [Workflow Windows MSYS2](../.github/workflows/win-msys2-ci.yml)
 - [Workflow macOS](../.github/workflows/mac-ci.yml)
 - [ROADMAP](../ROADMAP.md)
+
+
+## Suivi du 13 novembre 2026
+
+### PR #6 — runtime AppDir Linux
+
+- Head précédent `3ff20e6` : [run Linux 43184577292](https://github.com/claudeia206/VMPK/actions/runs/43184577292), job ARM64 `131068461017` en `failure` au step `Smoke-test installed AppDir`. Le log `ldd` montre `libQt6Network.so.6 => not found`, malgré les messages d'installation CMake des fichiers Qt Network. Le job x86_64 `131068461148` est resté `queued`, sans runner attribué. Aucun artefact Linux.
+- Le même head a produit MSVC ARM64 et macOS x86_64 en `success` avec artefacts ; MSVC x64, macOS ARM64, MSYS2 ucrt64 et clang64 ont été `cancelled`, et MSYS2 clangarm64 a réussi.
+- Nouveau head `afe99591d99c3ae1f3d9a2709fd09ae863da02da` : [Linux 43392579496](https://github.com/claudeia206/VMPK/actions/runs/43392579496) ARM64 `in_progress` au build Drumstick ; x86_64 `queued` (job `131775791040`, runner non attribué). [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43392579570), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43392579477) et [macOS](https://github.com/claudeia206/VMPK/actions/runs/43392579472) sont encore en cours.
+- Le code copie la chaîne de liens Qt Network via `file(COPY ... FOLLOW_SYMLINK_CHAIN)` sous `DESTDIR`. Test isolé CMake 3.31.6 réussi ; validation CI VMPK encore en attente.
+
+### PR #7 — permissions Linux
+
+[PR #7](https://github.com/claudeia206/VMPK/pull/7) ajoute `permissions: contents: read` au workflow Linux uniquement. La CI doit confirmer que les étapes checkout/vcpkg n'ont pas besoin de permissions supplémentaires. Les autres workflows restent inchangés tant que les besoins du téléchargement upstream ne sont pas démontrés.
