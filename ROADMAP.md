@@ -191,3 +191,6 @@ Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après valida
 - Le job Linux x86_64 `131775791040` reste `queued`, sans runner attribué ni étape exécutée. Aucun artefact Linux pour ce run.
 - Sur le même head, MSVC win64 et MSYS2 ucrt64/clang64 ont terminé en `success`; MSVC ARM64, MSYS2 clangarm64 et macOS x86_64 sont `in_progress`, macOS ARM64 est `success`. Les statuts en cours ne sont pas comptés comme validés.
 - Correction minimale : conserver un seul antislash avant `$ENV{DESTDIR}` dans la chaîne `install(CODE)`. Le test CMake isolé doit confirmer que le fichier versionné et le lien SONAME sont copiés sous le répertoire `DESTDIR`, jamais directement dans `/usr/lib`. **La nouvelle correction attend encore la CI VMPK.**
+
+
+- Contrôle statique complémentaire du smoke test : les deux commandes `find -exec` utilisent un unique échappement `\\;` pour terminer l'action. `bash -n` sur ces commandes isolées réussit. Ce contrôle de syntaxe ne remplace pas la CI du nouveau head.

@@ -128,8 +128,8 @@ jobs:
         test -x "$APPDIR/usr/bin/vmpk"
 
         echo "Qt Network runtime files in AppDir:"
-        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -exec ls -l {} \\;
-        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -type l -exec readlink -v {} \\;
+        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -exec ls -l {} \;
+        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -type l -exec readlink -v {} \;
 
         dependencies="$(env -u LD_LIBRARY_PATH ldd "$APPDIR/usr/bin/vmpk")"
         printf '%s\n' "$dependencies"
