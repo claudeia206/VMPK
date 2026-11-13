@@ -295,11 +295,12 @@ if (INSTALL_DEPENDENCIES AND QT_VERSION VERSION_GREATER_EQUAL 6.5)
         message(WARNING "Fluidsynth package not found")
     endif()
 
-    # Keep the Qt Network runtime in the Linux AppDir. The generated Qt
-    # deployment script did not copy this directly linked module in CI.
+    # Qt's imported SONAME can be a symlink. Copy the complete chain so
+    # DESTDIR-based AppDir installs include the versioned runtime library.
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND TARGET Qt6::Network)
-        install(IMPORTED_RUNTIME_ARTIFACTS Qt6::Network
-                LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        install(CODE
+            "file(COPY \"$<TARGET_FILE:Qt6::Network>\" DESTINATION \"\\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}\" FOLLOW_SYMLINK_CHAIN)"
+        )
     endif()
 
     if (DEFINED Drumstick_DIR)
