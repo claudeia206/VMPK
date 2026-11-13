@@ -7,6 +7,9 @@ on:
     branches: [ "devel", "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   BUILD_TYPE: RelWithDebInfo
   DRUMSTICK_LOCATION: ${{github.workspace}}/DrumstickV2
