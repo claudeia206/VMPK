@@ -194,3 +194,14 @@ Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après valida
 
 
 - Contrôle statique complémentaire du smoke test : les deux commandes `find -exec` utilisent un unique échappement `\\;` pour terminer l'action. `bash -n` sur ces commandes isolées réussit. Ce contrôle de syntaxe ne remplace pas la CI du nouveau head.
+
+
+### Suivi factuel — 14/11/2026 : diagnostic AppRun
+
+- Sur le head PR #6 `5206d9d0b2fde53aad295908d0214a1bf677d3c9`, le [run Linux 43393919287](https://github.com/claudeia206/VMPK/actions/runs/43393919287), job ARM64 `131780153638`, a terminé en `failure` au step `Smoke-test installed AppDir`. Les étapes de dépendances, CMake, vcpkg, Drumstick, compilation et installation étaient en `success`.
+- Le log montre que `libQt6Network.so.6` et sa cible `libQt6Network.so.6.11.1` sont bien présentes dans `AppDir/usr/lib`, mais `ldd` sans `LD_LIBRARY_PATH` rapporte `libQt6Network.so.6 => not found`. Le défaut n'est donc plus une copie manquante ni un problème `DESTDIR`.
+- Le diagnostic révèle que `CreateAppImage.cmake` créait `AppRun` comme simple lien symbolique vers le binaire. Un point d'entrée AppDir peut être un script qui prépare l'environnement ; la documentation AppImage décrit ce rôle : [spécification AppDir](https://docs.appimage.org/reference/appdir.html) et [packaging manuel](https://docs.appimage.org/packaging-guide/manual.html). La correction proposée remplace le lien par un petit script qui définit `APPDIR`, ajoute `AppDir/usr/lib` à `LD_LIBRARY_PATH`, puis exécute VMPK.
+- Le smoke test est renforcé : `ldd` utilise le chemin de bibliothèques réellement préparé par `AppRun`, puis le test lance `AppRun --version` et l'AppImage réelle via `--appimage-extract-and-run`, en retirant les variables Qt/LD héritées de l'action d'installation Qt. La documentation AppImage confirme que cette option permet l'exécution sans FUSE : [guide FUSE](https://docs.appimage.org/user-guide/troubleshooting/fuse.html).
+- Le job Linux x86_64 `131780153152` a été `cancelled` après environ 24 h : `runner_id=0`, nom vide, aucune étape exécutée. Ce n'est pas un échec de compilation. Aucun artefact Linux n'a été produit sur le run 43393919287.
+- Sur le même head, Windows MSVC x64/ARM64, MSYS2 (ucrt64/clang64/clangarm64) et macOS x86_64/ARM64 sont tous terminés en `success`. Les artefacts MSVC (installations + installeurs) et macOS (ZIP x86_64/ARM64) sont présents ; MSYS2 ne publie pas d'artefact.
+- **La correction AppRun et le nouveau test de lancement ne sont pas encore validés par la CI VMPK.** Aucune case de sortie P0 n'est cochée sur cette seule base.

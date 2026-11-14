@@ -121,29 +121,42 @@ jobs:
         DESTDIR: ${{github.workspace}}/build/vmpk-v${{steps.configuration.outputs.config_version}}-${{matrix.arch}}.AppDir
       run: cmake --install ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: '${{ matrix.icon }} Smoke-test installed AppDir'
+    - name: '${{ matrix.icon }} Smoke-test AppDir and AppImage'
       env:
         APPDIR: ${{github.workspace}}/build/vmpk-v${{steps.configuration.outputs.config_version}}-${{matrix.arch}}.AppDir
+        APPIMAGE: ${{github.workspace}}/build/vmpk-v${{steps.configuration.outputs.config_version}}-${{matrix.arch}}.AppImage
       run: |
         test -x "$APPDIR/usr/bin/vmpk"
+        test -x "$APPDIR/AppRun"
+        test -x "$APPIMAGE"
 
         echo "Qt Network runtime files in AppDir:"
-        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -exec ls -l {} \;
-        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -type l -exec readlink -v {} \;
+        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -exec ls -l {} \\;
+        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -type l -exec readlink -v {} \\;
 
-        dependencies="$(env -u LD_LIBRARY_PATH ldd "$APPDIR/usr/bin/vmpk")"
-        printf '%s\n' "$dependencies"
+        # Check dependencies with the same bundled library path configured by AppRun.
+        dependencies="$(env -u LD_LIBRARY_PATH LD_LIBRARY_PATH="$APPDIR/usr/lib" ldd "$APPDIR/usr/bin/vmpk")"
+        printf '%s\\n' "$dependencies"
         if grep -Fq "not found" <<< "$dependencies"; then
           echo "AppDir contains unresolved shared-library dependencies." >&2
           exit 1
         fi
 
-        env -u LD_LIBRARY_PATH \
-          -u QT_PLUGIN_PATH \
-          -u QML2_IMPORT_PATH \
-          -u QT_ROOT_DIR \
-          -u QT_QPA_PLATFORM_PLUGIN_PATH \
-          xvfb-run -a "$APPDIR/usr/bin/vmpk" --version
+        # Exercise the AppDir entry point without inheriting Qt paths from install-qt-action.
+        env -u APPDIR -u LD_LIBRARY_PATH \\
+          -u QT_PLUGIN_PATH \\
+          -u QML2_IMPORT_PATH \\
+          -u QT_ROOT_DIR \\
+          -u QT_QPA_PLATFORM_PLUGIN_PATH \\
+          xvfb-run -a "$APPDIR/AppRun" --version
+
+        # Test the actual type-2 AppImage without requiring FUSE in the runner.
+        env -u APPDIR -u LD_LIBRARY_PATH \\
+          -u QT_PLUGIN_PATH \\
+          -u QML2_IMPORT_PATH \\
+          -u QT_ROOT_DIR \\
+          -u QT_QPA_PLATFORM_PLUGIN_PATH \\
+          xvfb-run -a "$APPIMAGE" --appimage-extract-and-run --version
 
     - name: '${{ matrix.icon }} Archive'
       env:
