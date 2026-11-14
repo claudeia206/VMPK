@@ -122,10 +122,30 @@ function(CREATE_APPIMAGE)
     endif()
     set(_output_name "${ARGS_WORKDIR}/${_output_basename}")
 
-    # create the symlink that will launch the App (AppRun)
-    # Use relative target so the link inside AppDir points to usr/bin/<exe>
+    # AppRun must prepare the bundled library path for transitive dependencies
+    # such as QtNetwork, which can be required by another bundled Qt library.
+    set(APPIMAGE_APP_EXE "${ARGS_EXE}")
+    set(_app_run_template [=[
+#!/bin/sh
+set -eu
+
+if [ -z "${APPDIR:-}" ]; then
+    APPDIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+fi
+export APPDIR
+
+if [ -n "${LD_LIBRARY_PATH:-}" ]; then
+    export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH}"
+else
+    export LD_LIBRARY_PATH="${APPDIR}/usr/lib"
+fi
+
+exec "${APPDIR}/usr/bin/@APPIMAGE_APP_EXE@" "$@"
+]=])
+    string(CONFIGURE "${_app_run_template}" _app_run_content @ONLY)
     file(REMOVE "${_appdir}/AppRun")
-    file(CREATE_LINK "${_exe}" "${_appdir}/AppRun" SYMBOLIC)
+    file(WRITE "${_appdir}/AppRun" "${_app_run_content}")
+    file(CHMOD "${_appdir}/AppRun" FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
     # icon: create a convenient top-level link to the icon basename (this matches older behavior)
     get_filename_component(_icon_basename "${ARGS_ICON}" NAME)

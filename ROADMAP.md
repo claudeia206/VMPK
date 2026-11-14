@@ -27,7 +27,7 @@
 
 | Domaine | Priorité | État | Condition de sortie |
 |---|---:|---|---|
-| Stabilisation de la PR #1 et CI multiplateforme | P0 | En cours | Linux x86_64 + ARM64 verts ; autres jobs examinés ; revue terminée |
+| Stabilisation de la PR #1 et CI de référence | P0 | Terminée | PR #1 fusionnée ; Linux x86_64/ARM64 et Windows/macOS validés sur le head `b70b9ab` |
 | Cohérence des workflows et dépendances | P0 | En cours | Téléchargements, versions, permissions et packaging reproductibles |
 | Documentation d'installation et dépannage | P1 | À faire | Procédure testée sur les plateformes prises en charge |
 | Tests de non-régression | P1 | À faire | Tests automatisés utiles + scénarios manuels documentés |
@@ -38,15 +38,25 @@
 ## Phase 0 — Stabilisation et état des lieux (P0)
 
 - [x] Établir une roadmap en phases avec critères de sortie.
-- [ ] Finaliser la PR #1 : construction locale de Drumstick sur Linux et correction des téléchargements Windows/macOS.
-- [ ] Obtenir un résultat terminal **success** pour Linux x86_64 sur le runner Linux Mint self-hosted.
-- [x] Vérifier Linux ARM64 : le dernier résultat connu est vert.
-- [ ] Attendre et vérifier les résultats finaux Windows MSVC, Windows MSYS2 et macOS.
-- [ ] Examiner les logs de chaque job échoué ; distinguer problème de runner, téléchargement, dépendance, configuration, compilation et packaging.
-- [ ] Vérifier les artefacts réellement produits et leur contenu ; ne pas considérer un simple upload comme preuve d'installation fonctionnelle.
-- [ ] Comparer le diff de la PR avec `devel`, vérifier qu'il reste limité au problème CI et relire les workflows modifiés.
+- [x] Finaliser la PR #1 : construction locale de Drumstick sur Linux et correction des téléchargements Windows/macOS ; fusion squash `295fd10` après validation complète.
+- [x] Linux x86_64 : **success** sur le runner Linux Mint self-hosted ; [run 42338619625](https://github.com/claudeia206/VMPK/actions/runs/42338619625).
+- [x] Linux ARM64 : **success** ; [run 42338619625](https://github.com/claudeia206/VMPK/actions/runs/42338619625).
+- [x] Windows MSVC, Windows MSYS2 et macOS : tous les jobs du head PR #1 en **success** ; [MSVC](https://github.com/claudeia206/VMPK/actions/runs/42338619573), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/42338619619), [macOS](https://github.com/claudeia206/VMPK/actions/runs/42338619626).
+- [x] Examiner les jobs PR #1 : aucun job en échec, tous les steps de build/install/package sont **success** ; les annulations et échecs des PR suivantes sont suivis séparément.
+- [x] Vérifier la présence et la structure des artefacts PR #1 : AppDir/AppImage Linux x86_64 et ARM64, installeurs MSVC et bundles macOS. Le test de lancement autonome reste traité en Phase 1.
+- [x] Comparer et relire le diff PR #1 (workflows CI et roadmap) ; commit fusionné [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2).
 
 **Critères de sortie :** les jobs requis sont terminés, les cibles Linux x86_64 et ARM64 sont vertes, les autres plateformes sont vertes ou leurs limites sont explicitement documentées ; la PR est prête pour revue. Aucune fusion automatique.
+
+
+### Suivi factuel — 11/11/2026
+
+- PR #1 est clôturée et fusionnée dans `devel` : [commit 295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Son head `fix/linux-local-midi-dependency` reste `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2`.
+- Les jobs Linux x86_64, Linux ARM64, Windows MSVC (x64/ARM64), Windows MSYS2 (ucrt64/clang64/clangarm64) et macOS (x86_64/ARM64) de PR #1 sont terminés en `success` ; artefacts présents dans le [run Linux](https://github.com/claudeia206/VMPK/actions/runs/42338619625) et les runs Windows/macOS ci-dessus.
+- PR #2 et PR #3 : Linux ARM64 et plateformes Windows/macOS validés ; Linux x86_64 a été `cancelled` sans runner attribué (`runner_id=0`, aucune étape), donc le pin Drumstick n'est pas encore validé x86_64.
+- PR #4 : Linux ARM64, Windows, MSYS2 et macOS ont réussi sur le head documentaire ; Linux x86_64 est resté `queued` sans runner. Un ancien run x86_64 a échoué, mais ses logs étaient indisponibles (`404 BlobNotFound`) et ne démontrent pas une cause de code.
+- PR #5 : Linux ARM64, Windows, MSYS2 et macOS ont réussi ; Linux x86_64 a été annulé sans runner attribué. Le run `pull_request_target` disponible utilise le workflow de la branche de base et ne valide pas directement le correctif de cette PR.
+- PR #6 : le smoke test ARM64 a révélé un défaut réel de RPATH. Le log [run 42784606828](https://github.com/claudeia206/VMPK/actions/runs/42784606828), job `129722593133`, montre `libdrumstick-widgets.so.2` présent dans l'AppDir mais un RPATH configuré à `\\/../lib` au lieu de `$ORIGIN/../lib`, car le shell développait `$ORIGIN`. La correction utilise maintenant des quotes simples autour de la valeur CMake et vérifie `ldd` sans `LD_LIBRARY_PATH`, puis lance le binaire avec les chemins Qt externes retirés. **Validation CI en attente** sur le nouveau head.
 
 ## Phase 1 — CI, compilation et packaging (P0)
 
@@ -156,3 +166,42 @@ Pour chaque élément :
 ---
 
 Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après validation factuelle ; les priorités peuvent changer si un bug bloquant ou une demande upstream importante apparaît.
+
+
+### Suivi factuel — 12/11/2026
+
+- Sur le head PR #6 précédent `30b33360377c9f4c9cc6411602a158ae9d70bf80`, le [run Linux 42986186880](https://github.com/claudeia206/VMPK/actions/runs/42986186880) a terminé en `failure` sur ARM64 au step `Smoke-test installed AppDir` (job `130407805424`). Les étapes installation, compilation de Drumstick et VMPK étaient en `success`. Le log `ldd` montre précisément `libQt6Network.so.6 => not found`; l'archive et les uploads ont été ignorés. L'artefact Linux de ce run est donc absent.
+- Le job Linux x86_64 `130407805865` a terminé `cancelled` sans runner attribué ni étape exécutée ; les logs renvoient `404 BlobNotFound`. Aucune cause de compilation x86_64 ne peut être déduite.
+- Sur ce même head, Windows MSVC x64/ARM64, Windows MSYS2 (ucrt64/clang64/clangarm64) et macOS x86_64/ARM64 sont tous terminés en `success`. Les artefacts MSVC et macOS sont présents ; MSYS2 ne publie pas d'artefact.
+- Correction préparée dans cette PR : installer explicitement la cible importée `Qt6::Network` dans `CMAKE_INSTALL_LIBDIR` sous Linux, car le script de déploiement Qt n'a pas inclus ce module pourtant requis au runtime. Commit [d6e2943](https://github.com/claudeia206/VMPK/commit/d6e294309d2e5b6da5319d0f8a0b6167851ad5fd). **Cette correction n'est pas encore validée par CI ; la tâche de smoke test reste non cochée.**
+
+
+### Suivi factuel — 13/11/2026
+
+- PR #1 reste fusionnée : head historique `fix/linux-local-midi-dependency` = `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2`, commit de fusion `295fd10b688d36b0b06fc6aba6cb56d0e32c68a2`. Les jobs Linux x86_64/ARM64, Windows MSVC x64/ARM64, MSYS2 (3 environnements) et macOS x86_64/ARM64 sont terminés en `success` ; artefacts Linux, MSVC et macOS présents.
+- Sur le head PR #6 `3ff20e6d5582fa2ece61b861fcd02f7af02bdd45`, le [run Linux 43184577292](https://github.com/claudeia206/VMPK/actions/runs/43184577292) a échoué sur ARM64 au step `Smoke-test installed AppDir` (job `131068461017`). Le log montre que l'installation CMake annonce `libQt6Network.so.6` et `libQt6Network.so.6.11.1` comme `Up-to-date`, mais `ldd` sans `LD_LIBRARY_PATH` renvoie encore `libQt6Network.so.6 => not found`. Le job x86_64 `131068461148` est resté `queued`, sans runner attribué ni étape exécutée. Aucun artefact Linux n'a été produit pour ce run.
+- Sur ce même head, MSVC ARM64 et macOS x86_64 ont réussi et leurs artefacts sont présents ; MSVC x64, macOS ARM64, MSYS2 ucrt64 et clang64 sont `cancelled` sans étapes, tandis que MSYS2 clangarm64 est `success`. Les jobs annulés ne sont pas comptés comme validés.
+- La commande `install(IMPORTED_RUNTIME_ARTIFACTS Qt6::Network)` peut ne copier que le lien SONAME lorsque la localisation importée est elle-même un lien symbolique. Un test CMake isolé avec CMake 3.31.6 a reproduit ce comportement. La correction proposée utilise `install(CODE ... file(COPY ... FOLLOW_SYMLINK_CHAIN)` afin de copier le lien et sa cible dans le chemin `DESTDIR` de l'AppDir. Le même test isolé a confirmé la présence du lien et du fichier versionné après installation.
+- Le smoke test affiche maintenant les liens et cibles `libQt6Network.so*` avant `ldd`, afin que le prochain échec éventuel fournisse le diagnostic du système de fichiers. **Cette nouvelle correction n'est pas encore validée par la CI VMPK.**
+
+
+### Suivi correctif — 13/11/2026
+
+- Sur le head `afe99591d99c3ae1f3d9a2709fd09ae863da02da`, le [run Linux 43392579496](https://github.com/claudeia206/VMPK/actions/runs/43392579496), job ARM64 `131775791467`, a échoué au step `Install` avant le smoke test. Cause démontrée dans le log : `file COPY cannot copy file .../libQt6Network.so.6.11.1 to /usr/lib/libQt6Network.so.6.11.1: Permission denied`. Le chemin `DESTDIR` n'était pas conservé dans le code d'installation généré ; la chaîne CMake contenait deux antislashs avant `$ENV{DESTDIR}`, ce qui faisait développer la variable trop tôt.
+- Le job Linux x86_64 `131775791040` reste `queued`, sans runner attribué ni étape exécutée. Aucun artefact Linux pour ce run.
+- Sur le même head, MSVC win64 et MSYS2 ucrt64/clang64 ont terminé en `success`; MSVC ARM64, MSYS2 clangarm64 et macOS x86_64 sont `in_progress`, macOS ARM64 est `success`. Les statuts en cours ne sont pas comptés comme validés.
+- Correction minimale : conserver un seul antislash avant `$ENV{DESTDIR}` dans la chaîne `install(CODE)`. Le test CMake isolé doit confirmer que le fichier versionné et le lien SONAME sont copiés sous le répertoire `DESTDIR`, jamais directement dans `/usr/lib`. **La nouvelle correction attend encore la CI VMPK.**
+
+
+- Contrôle statique complémentaire du smoke test : les deux commandes `find -exec` utilisent un unique échappement `\\;` pour terminer l'action. `bash -n` sur ces commandes isolées réussit. Ce contrôle de syntaxe ne remplace pas la CI du nouveau head.
+
+
+### Suivi factuel — 14/11/2026 : diagnostic AppRun
+
+- Sur le head PR #6 `5206d9d0b2fde53aad295908d0214a1bf677d3c9`, le [run Linux 43393919287](https://github.com/claudeia206/VMPK/actions/runs/43393919287), job ARM64 `131780153638`, a terminé en `failure` au step `Smoke-test installed AppDir`. Les étapes de dépendances, CMake, vcpkg, Drumstick, compilation et installation étaient en `success`.
+- Le log montre que `libQt6Network.so.6` et sa cible `libQt6Network.so.6.11.1` sont bien présentes dans `AppDir/usr/lib`, mais `ldd` sans `LD_LIBRARY_PATH` rapporte `libQt6Network.so.6 => not found`. Le défaut n'est donc plus une copie manquante ni un problème `DESTDIR`.
+- Le diagnostic révèle que `CreateAppImage.cmake` créait `AppRun` comme simple lien symbolique vers le binaire. Un point d'entrée AppDir peut être un script qui prépare l'environnement ; la documentation AppImage décrit ce rôle : [spécification AppDir](https://docs.appimage.org/reference/appdir.html) et [packaging manuel](https://docs.appimage.org/packaging-guide/manual.html). La correction proposée remplace le lien par un petit script qui définit `APPDIR`, ajoute `AppDir/usr/lib` à `LD_LIBRARY_PATH`, puis exécute VMPK.
+- Le smoke test est renforcé : `ldd` utilise le chemin de bibliothèques réellement préparé par `AppRun`, puis le test lance `AppRun --version` et l'AppImage réelle via `--appimage-extract-and-run`, en retirant les variables Qt/LD héritées de l'action d'installation Qt. La documentation AppImage confirme que cette option permet l'exécution sans FUSE : [guide FUSE](https://docs.appimage.org/user-guide/troubleshooting/fuse.html).
+- Le job Linux x86_64 `131780153152` a été `cancelled` après environ 24 h : `runner_id=0`, nom vide, aucune étape exécutée. Ce n'est pas un échec de compilation. Aucun artefact Linux n'a été produit sur le run 43393919287.
+- Sur le même head, Windows MSVC x64/ARM64, MSYS2 (ucrt64/clang64/clangarm64) et macOS x86_64/ARM64 sont tous terminés en `success`. Les artefacts MSVC (installations + installeurs) et macOS (ZIP x86_64/ARM64) sont présents ; MSYS2 ne publie pas d'artefact.
+- **La correction AppRun et le nouveau test de lancement ne sont pas encore validés par la CI VMPK.** Aucune case de sortie P0 n'est cochée sur cette seule base.
