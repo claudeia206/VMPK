@@ -1,6 +1,6 @@
 # Matrice CI et reproductibilité
 
-> État vérifié le **13 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel.
+> État vérifié le **14 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel.
 
 ## Matrice de compilation
 
@@ -100,3 +100,32 @@ Qt Linux est temporairement épinglé à **6.11.1** : le workflow documente un p
 - Nouveau head PR #6 : [Linux](https://github.com/claudeia206/VMPK/actions/runs/43393381690) ARM64 `in_progress`, x86_64 `queued` sans runner ; [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43393381680), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43393381678) et [macOS](https://github.com/claudeia206/VMPK/actions/runs/43393381699) en cours/attente. Contrôle de branche `success`. Aucun artefact du nouveau head.
 - PR #7 : Linux ARM64 `in_progress` au step `VCPKG Build`, x86_64 `queued` sans runner ; Windows/MSYS2/macOS en cours. Les logs Linux sont indisponibles pour l'instant ; aucune conclusion sur les permissions réduites avant la fin de la CI.
 - PR #4 head documentaire : Linux ARM64 `in_progress`, x86_64 `queued` sans runner ; autres plateformes en cours. Les jobs en cours ou en attente ne sont pas des succès.
+
+
+## Suivi du 14 novembre 2026
+
+### PR #4 — head documentaire `f579619`
+
+- Linux ARM64 : `success` ; Linux x86_64 : `cancelled`, job `131779130443`, `runner_id=0`, aucune étape.
+- Windows MSVC x64/ARM64, MSYS2 (3 environnements) et macOS x86_64/ARM64 : `success`.
+- Artefacts présents : AppDir tar.gz + AppImage ARM64, installations/installeurs MSVC x64/ARM64, ZIP macOS x86_64/ARM64. Aucun artefact MSYS2.
+- [Run Linux](https://github.com/claudeia206/VMPK/actions/runs/43393603814) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43393603659) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43393603652) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43393603868).
+
+### PR #7 — permissions Linux `contents: read`
+
+- Linux ARM64 : `success` ; Linux x86_64 : `cancelled`, job `131776904540`, `runner_id=0`, aucune étape.
+- Windows MSVC, MSYS2 et macOS : `success`.
+- Artefacts présents : AppDir/AppImage ARM64, installations/installeurs MSVC et ZIP macOS. Aucun artefact MSYS2.
+- La réduction à `contents: read` est validée sur ARM64 ; l'architecture x86_64 reste non testée.
+- [Run Linux](https://github.com/claudeia206/VMPK/actions/runs/43392922388) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43392922399) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43392922203) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43392922586).
+
+### PR #6 — smoke test AppDir/AppImage
+
+- Le [run Linux 43393919287](https://github.com/claudeia206/VMPK/actions/runs/43393919287), head `5206d9d`, a échoué sur ARM64 au step `Smoke-test installed AppDir`. Les fichiers Qt Network sont présents dans l'AppDir, mais `ldd` sans `LD_LIBRARY_PATH` ne résout pas `libQt6Network.so.6`. Le job x86_64 a été annulé sans runner ni étape ; aucun artefact Linux.
+- Le nouveau head `da16f0e` ajoute un `AppRun` shell qui prépare `LD_LIBRARY_PATH`, teste le binaire via `AppRun --version` et lance l'AppImage avec `--appimage-extract-and-run`. Cette correction reste en validation.
+- CI du nouveau head : Linux ARM64 `in_progress`, Linux x86_64 `queued` (job `132398547971`, aucun runner attribué), MSVC x64/ARM64 `in_progress`, MSYS2 clangarm64/ucrt64 `in_progress` et clang64 `queued`, macOS x86_64/ARM64 `in_progress`, contrôle de branche `success`.
+- [Linux 43578697576](https://github.com/claudeia206/VMPK/actions/runs/43578697576) · [MSVC 43578697552](https://github.com/claudeia206/VMPK/actions/runs/43578697552) · [MSYS2 43578697675](https://github.com/claudeia206/VMPK/actions/runs/43578697675) · [macOS 43578697518](https://github.com/claudeia206/VMPK/actions/runs/43578697518).
+
+### Blocage self-hosted
+
+Les jobs Linux x86_64 récents sont en attente ou annulés avec le label `self-hosted`, `runner_id=0`, aucun nom et aucune étape. Il faut contrôler le service Linux Mint localement ; GitHub seul ne permet pas d'affirmer qu'il est arrêté.
