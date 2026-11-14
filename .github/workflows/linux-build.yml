@@ -131,31 +131,31 @@ jobs:
         test -x "$APPIMAGE"
 
         echo "Qt Network runtime files in AppDir:"
-        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -exec ls -l {} \\;
-        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -type l -exec readlink -v {} \\;
+        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -exec ls -l {} \;
+        find "$APPDIR/usr/lib" -maxdepth 1 -name 'libQt6Network.so*' -type l -exec readlink -v {} \;
 
         # Check dependencies with the same bundled library path configured by AppRun.
         dependencies="$(env -u LD_LIBRARY_PATH LD_LIBRARY_PATH="$APPDIR/usr/lib" ldd "$APPDIR/usr/bin/vmpk")"
-        printf '%s\\n' "$dependencies"
+        printf '%s\n' "$dependencies"
         if grep -Fq "not found" <<< "$dependencies"; then
           echo "AppDir contains unresolved shared-library dependencies." >&2
           exit 1
         fi
 
         # Exercise the AppDir entry point without inheriting Qt paths from install-qt-action.
-        env -u APPDIR -u LD_LIBRARY_PATH \\
-          -u QT_PLUGIN_PATH \\
-          -u QML2_IMPORT_PATH \\
-          -u QT_ROOT_DIR \\
-          -u QT_QPA_PLATFORM_PLUGIN_PATH \\
+        env -u APPDIR -u LD_LIBRARY_PATH \
+          -u QT_PLUGIN_PATH \
+          -u QML2_IMPORT_PATH \
+          -u QT_ROOT_DIR \
+          -u QT_QPA_PLATFORM_PLUGIN_PATH \
           xvfb-run -a "$APPDIR/AppRun" --version
 
         # Test the actual type-2 AppImage without requiring FUSE in the runner.
-        env -u APPDIR -u LD_LIBRARY_PATH \\
-          -u QT_PLUGIN_PATH \\
-          -u QML2_IMPORT_PATH \\
-          -u QT_ROOT_DIR \\
-          -u QT_QPA_PLATFORM_PLUGIN_PATH \\
+        env -u APPDIR -u LD_LIBRARY_PATH \
+          -u QT_PLUGIN_PATH \
+          -u QML2_IMPORT_PATH \
+          -u QT_ROOT_DIR \
+          -u QT_QPA_PLATFORM_PLUGIN_PATH \
           xvfb-run -a "$APPIMAGE" --appimage-extract-and-run --version
 
     - name: '${{ matrix.icon }} Archive'
