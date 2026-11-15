@@ -1,6 +1,6 @@
 # Matrice CI et reproductibilité
 
-> État vérifié le **14 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel.
+> État vérifié le **15 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel. Les résultats par PR sont datés dans les sections de suivi ci-dessous.
 
 ## Matrice de compilation
 
@@ -129,3 +129,36 @@ Qt Linux est temporairement épinglé à **6.11.1** : le workflow documente un p
 ### Blocage self-hosted
 
 Les jobs Linux x86_64 récents sont en attente ou annulés avec le label `self-hosted`, `runner_id=0`, aucun nom et aucune étape. Il faut contrôler le service Linux Mint localement ; GitHub seul ne permet pas d'affirmer qu'il est arrêté.
+
+## Résultats actualisés — 15 novembre 2026
+
+### PR #6 — AppDir/AppImage Linux, head da16f0e
+
+- Tous les jobs sont terminés en success : Linux x86_64 (runner self-hosted Linux Mint, job 132398547971), Linux ARM64 (132398548251), MSVC x64/ARM64, MSYS2 clangarm64/ucrt64/clang64 et macOS x86_64/ARM64.
+- Le smoke test Linux a vérifié que ldd résout les dépendances Qt dans AppDir/usr/lib, puis exécuté AppRun --version et l'AppImage avec --appimage-extract-and-run --version sous Xvfb, avec les variables Qt externes neutralisées.
+- [Run Linux](https://github.com/claudeia206/VMPK/actions/runs/43578697576) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43578697552) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43578697675) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43578697518).
+- Artefacts Linux présents et non expirés : AppDir x86_64 ID 14109270827 (54 806 295 octets), AppImage x86_64 ID 14109365678 (50 784 760 octets), AppDir ARM64 ID 14108235421 (53 498 008 octets), AppImage ARM64 ID 14107786861 (49 351 176 octets). Les installeurs MSVC x64/ARM64 et ZIP macOS x86_64/ARM64 sont également présents ; MSYS2 n'a pas d'artefact.
+- Limite : le test lance VMPK avec --version sous Xvfb ; il ne valide pas une connexion à un périphérique MIDI physique ni le MIDI thru.
+
+### PR #4 — documentation, head 1d18f3f
+
+- Tous les jobs Linux x86_64/ARM64, Windows MSVC x64/ARM64, MSYS2 (3 environnements) et macOS x86_64/ARM64 sont terminés en success.
+- [Linux](https://github.com/claudeia206/VMPK/actions/runs/43578894178) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43578894175) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43578894181) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43578894198).
+- Artefacts Linux AppDir/AppImage pour x86_64 et ARM64, installeurs MSVC x64/ARM64 et ZIP macOS x86_64/ARM64 présents ; aucun artefact MSYS2.
+
+### Relances Linux x86_64 ciblées — PR #2, #3, #5 et #7
+
+Les anciens jobs x86_64 avaient été annulés sans runner attribué ni étape. Après le succès du runner Linux Mint sur PR #6, les quatre jobs annulés ont été relancés individuellement, sans commit ni modification de code :
+
+| PR | Job de la relance | État au dernier contrôle |
+|---|---:|---|
+| [#2](https://github.com/claudeia206/VMPK/pull/2) | 132750619127 | queued, aucune étape, aucun runner attribué visible |
+| [#3](https://github.com/claudeia206/VMPK/pull/3) | 132750626086 | queued, aucune étape, aucun runner attribué visible |
+| [#5](https://github.com/claudeia206/VMPK/pull/5) | 132750633518 | queued, aucune étape, aucun runner attribué visible |
+| [#7](https://github.com/claudeia206/VMPK/pull/7) | 132750642066 | queued, aucune étape, aucun runner attribué visible |
+
+- Les jobs ARM64 et les jobs Windows/MSYS2/macOS des runs précédents sont success. Les relances x86_64 restent en attente : elles ne sont ni des échecs de compilation ni des succès.
+- PR #3 : le commit upstream épinglé 23da19d05ad511bd9140a2d00eedead2ae5bac1a existe dans [pedrolcl/drumstick](https://github.com/pedrolcl/drumstick/commit/23da19d05ad511bd9140a2d00eedead2ae5bac1a) ; validation de compilation VMPK confirmée sur ARM64 seulement en attendant le job x86_64.
+- PR #7 : permissions contents: read validées sur ARM64 ; x86_64 en attente.
+- Le runner self-hosted Linux Mint a bien exécuté le job x86_64 de PR #6 le 14/11. Les nouvelles relances sont de nouveau queued le 15/11 ; vérifier le journal systemd si elles ne sont pas attribuées.
+
