@@ -87,6 +87,36 @@ jobs:
     - name: Package
       run: cmake --build ${{github.workspace}}/build --target package
 
+    - name: 'Smoke-test packaged macOS app'
+      env:
+        PACKAGE_VERSION: ${{steps.configuration.outputs.config_version}}
+        PACKAGE_ARCH: ${{matrix.arch}}
+        PACKAGE_PATH: ${{github.workspace}}/build/vmpk-v${{steps.configuration.outputs.config_version}}-macOS-${{matrix.arch}}.zip
+      run: |
+        set -euo pipefail
+        test -f "$PACKAGE_PATH"
+
+        smoke_dir="$(mktemp -d "${RUNNER_TEMP}/vmpk-smoke.XXXXXX")"
+        trap 'rm -rf "$smoke_dir"' EXIT
+        ditto -x -k "$PACKAGE_PATH" "$smoke_dir"
+
+        app="$smoke_dir/VMPK-v${PACKAGE_VERSION}-macOS-${PACKAGE_ARCH}/vmpk.app"
+        executable="$app/Contents/MacOS/vmpk"
+        cocoa_plugin="$app/Contents/PlugIns/platforms/libqcocoa.dylib"
+        test -x "$executable"
+        test -f "$cocoa_plugin"
+
+        # Run the packaged bundle without inheriting Qt SDK or DYLD search paths.
+        env -u APPDIR \
+            -u DYLD_LIBRARY_PATH \
+            -u DYLD_FRAMEWORK_PATH \
+            -u QT_PLUGIN_PATH \
+            -u QT_QPA_PLATFORM_PLUGIN_PATH \
+            -u QT_QPA_PLATFORM \
+            -u QT_ROOT_DIR \
+            -u QML2_IMPORT_PATH \
+            "$executable" --version
+
     - name: 'Upload Artifacts'
       uses: actions/upload-artifact@v7
       with:
