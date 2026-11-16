@@ -162,3 +162,13 @@ Les anciens jobs x86_64 avaient été annulés sans runner attribué ni étape. 
 - PR #7 : permissions contents: read validées sur ARM64 ; x86_64 en attente.
 - Le runner self-hosted Linux Mint a bien exécuté le job x86_64 de PR #6 le 14/11. Les nouvelles relances sont de nouveau queued le 15/11 ; vérifier le journal systemd si elles ne sont pas attribuées.
 
+
+
+## Contrôle complémentaire — 16 novembre 2026
+
+- PR #4, head `b9a1285e65727a5cea919f8b05019aa7e51cd036` : Linux ARM64 `success`, job `132751544453` ; Linux x86_64 `queued`, job `132751544633`, sans étape ni attribution de runner visible. MSVC x64/ARM64, MSYS2 ucrt64/clang64/clangarm64 et macOS x86_64/ARM64 sont `success`. [Linux](https://github.com/claudeia206/VMPK/actions/runs/43694369669) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43694369625) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43694369639) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43694369650).
+- Artefacts PR #4 non expirés : AppDir ARM64 `14153647051` (53 502 402 octets), AppImage ARM64 `14153208053` (49 351 176 octets), MSVC ARM64 `14153768307`, installeur ARM64 `14153568915`, installeur x64 `14153492394`, installation x64 `14153412537`, ZIP macOS x86_64 `14154266371` et ARM64 `14154062053`. Aucun artefact MSYS2 ni x86_64 Linux sur ce run.
+- PR #6, head `da16f0e7e3ec0986965bb7e4c096da5a9c0977c8` : tous les jobs et smoke tests Linux x86_64/ARM64 sont `success` ; artefacts AppDir/AppImage pour les deux architectures, MSVC et macOS disponibles. [Run Linux](https://github.com/claudeia206/VMPK/actions/runs/43578697576).
+- PR #2/#3/#5/#7 : les relances ciblées x86_64 `132750619127`, `132750626086`, `132750633518` et `132750642066` sont toujours `queued`, sans étapes ni runner attribué visible. Les jobs ARM64, MSVC, MSYS2 et macOS correspondants sont `success`. Une attente sans runner n'est ni un succès ni un échec de compilation.
+- Le workflow Linux déclare `runs-on: self-hosted` pour x86_64 et `ubuntu-24.04-arm` pour ARM64. Le runner Linux Mint a exécuté le job PR #6 le 14/11 ; son état systemd actuel doit être contrôlé localement si les files d'attente persistent.
+- Le nouveau commit documentaire PR #4 créé avec cette mise à jour n'a pas encore de résultat CI ; les statuts ci-dessus se rapportent au parent `b9a1285`.
