@@ -172,3 +172,11 @@ Les anciens jobs x86_64 avaient été annulés sans runner attribué ni étape. 
 - PR #2/#3/#5/#7 : les relances ciblées x86_64 `132750619127`, `132750626086`, `132750633518` et `132750642066` sont toujours `queued`, sans étapes ni runner attribué visible. Les jobs ARM64, MSVC, MSYS2 et macOS correspondants sont `success`. Une attente sans runner n'est ni un succès ni un échec de compilation.
 - Le workflow Linux déclare `runs-on: self-hosted` pour x86_64 et `ubuntu-24.04-arm` pour ARM64. Le runner Linux Mint a exécuté le job PR #6 le 14/11 ; son état systemd actuel doit être contrôlé localement si les files d'attente persistent.
 - Le nouveau commit documentaire PR #4 créé avec cette mise à jour n'a pas encore de résultat CI ; les statuts ci-dessus se rapportent au parent `b9a1285`.
+
+
+## Correction des statuts — 16 novembre 2026
+
+- Les relances Linux x86_64 des PR #2/#3/#5/#7 ont expiré/été annulées : jobs `132750619127`, `132750626086`, `132750633518`, `132750642066` en `cancelled`, zéro étape et aucun runner attribué. Les jobs ARM64 et les autres plateformes de ces PR sont `success`.
+- PR #4, head `056fd0bff1573b83b7dea83679cec8d1ad913020` : Linux x86_64 `queued`, Linux ARM64 `in_progress`, MSVC et MSYS2 `success`, macOS `in_progress`. [Linux](https://github.com/claudeia206/VMPK/actions/runs/43829994896) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43829994817) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43829994779) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43829994763).
+- PR #8, head `2badee225118994528e9fd9c1e52b42cc8c96950` : Linux x86_64 `queued`, Linux ARM64 `in_progress`, MSVC/MSYS2/macOS `in_progress`. Les smoke tests post-installation ne sont pas encore atteints. [Linux](https://github.com/claudeia206/VMPK/actions/runs/43830712460) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43830712410) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43830712413) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43830712378).
+- Les jobs x86_64 en attente ne disposent d'aucun runner/nom/étape visible. Ne pas les assimiler à un échec de compilation ni à un succès.
