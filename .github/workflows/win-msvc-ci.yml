@@ -87,6 +87,55 @@ jobs:
     - name: '${{ matrix.icon }} Install'
       run: cmake --install ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - name: '${{ matrix.icon }} Smoke-test NSIS installer'
+      shell: pwsh
+      env:
+        PACKAGE_VERSION: ${{steps.configuration.outputs.config_version}}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $installerPattern = "VMPK-v$($env:PACKAGE_VERSION)-Windows-*.exe"
+        $installer = Get-ChildItem -LiteralPath "$env:GITHUB_WORKSPACE\build" -Filter $installerPattern -File | Select-Object -First 1
+        if (-not $installer) {
+          throw "NSIS installer not found: $installerPattern"
+        }
+
+        # Use a unique path without spaces; NSIS requires /D to be the final argument.
+        $installRoot = Join-Path $env:RUNNER_TEMP ("vmpk-smoke-" + [System.Guid]::NewGuid().ToString('N'))
+        $process = Start-Process -FilePath $installer.FullName -ArgumentList @('/S', "/D=$installRoot") -Wait -PassThru
+        if ($process.ExitCode -ne 0) {
+          throw "NSIS installer exited with code $($process.ExitCode)"
+        }
+
+        $executable = Join-Path $installRoot 'vmpk.exe'
+        $platformPlugin = Join-Path $installRoot 'platforms\qwindows.dll'
+        if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
+          throw "Installed executable not found: $executable"
+        }
+        if (-not (Test-Path -LiteralPath $platformPlugin -PathType Leaf)) {
+          throw "Bundled Qt Windows platform plugin not found: $platformPlugin"
+        }
+
+        # Prevent the Qt SDK installed for compilation from masking missing bundled files.
+        if ($env:QT_ROOT_DIR) {
+          $qtBin = [System.IO.Path]::GetFullPath((Join-Path $env:QT_ROOT_DIR 'bin')).TrimEnd('\')
+          $env:PATH = (($env:PATH -split ';') | Where-Object { $_.TrimEnd('\') -ine $qtBin }) -join ';'
+        }
+        $env:QT_PLUGIN_PATH = $null
+        $env:QT_QPA_PLATFORM_PLUGIN_PATH = $null
+        $env:QT_QPA_PLATFORM = $null
+        $env:QML2_IMPORT_PATH = $null
+        $env:QT_ROOT_DIR = $null
+
+        $stdoutPath = Join-Path $env:RUNNER_TEMP 'vmpk-version.stdout'
+        $stderrPath = Join-Path $env:RUNNER_TEMP 'vmpk-version.stderr'
+        $process = Start-Process -FilePath $executable -ArgumentList '--version' -WorkingDirectory $installRoot -Wait -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+        if ($process.ExitCode -ne 0) {
+          if (Test-Path -LiteralPath $stdoutPath) { Get-Content -LiteralPath $stdoutPath }
+          if (Test-Path -LiteralPath $stderrPath) { Get-Content -LiteralPath $stderrPath }
+          throw "Installed VMPK --version failed with exit code $($process.ExitCode)"
+        }
+        Write-Host "Installed VMPK --version exited with code 0."
+
     - name: '${{ matrix.icon }} Upload Artifacts'
       uses: actions/upload-artifact@v7
       with:
