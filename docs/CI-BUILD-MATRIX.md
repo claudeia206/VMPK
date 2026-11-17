@@ -180,3 +180,29 @@ Les anciens jobs x86_64 avaient été annulés sans runner attribué ni étape. 
 - PR #4, head `056fd0bff1573b83b7dea83679cec8d1ad913020` : Linux x86_64 `queued`, Linux ARM64 `in_progress`, MSVC et MSYS2 `success`, macOS `in_progress`. [Linux](https://github.com/claudeia206/VMPK/actions/runs/43829994896) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43829994817) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43829994779) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43829994763).
 - PR #8, head `2badee225118994528e9fd9c1e52b42cc8c96950` : Linux x86_64 `queued`, Linux ARM64 `in_progress`, MSVC/MSYS2/macOS `in_progress`. Les smoke tests post-installation ne sont pas encore atteints. [Linux](https://github.com/claudeia206/VMPK/actions/runs/43830712460) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43830712410) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43830712413) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43830712378).
 - Les jobs x86_64 en attente ne disposent d'aucun runner/nom/étape visible. Ne pas les assimiler à un échec de compilation ni à un succès.
+## État vérifié le 17 novembre 2026
+
+### PR #4 — head `224f0281def38b17169862aa40eb46ab3acc4405`
+
+| Cible | État | Artefacts vérifiés |
+|---|---|---|
+| Linux x86_64 | `queued` — job `133176034004`, `runner_id=0`, aucune étape | Aucun |
+| Linux ARM64 | `success` | AppDir tar.gz + AppImage |
+| Windows MSVC x64/ARM64 | `success` | Répertoires d'installation + installeurs NSIS |
+| Windows MSYS2 ucrt64/clang64/clangarm64 | `success` | Aucun artefact publié |
+| macOS x86_64/ARM64 | `success` | ZIP `.app` |
+
+Liens : [Linux](https://github.com/claudeia206/VMPK/actions/runs/43830995260) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43830995221) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43830995322) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/43830995339). Les artefacts Linux x86_64 manquent parce que le job n'a jamais reçu de runner ; ce n'est pas un échec de build.
+
+### PR #8 — smoke tests Windows/macOS
+
+- Head initial `2badee225118994528e9fd9c1e52b42cc8c96950` : macOS x86_64/ARM64 et MSYS2 ucrt64/clang64/clangarm64 `success`; Linux ARM64 `success`, Linux x86_64 `queued`; Windows MSVC x64/ARM64 `failure` à l'étape `Smoke-test NSIS installer`.
+- Diagnostic des logs : le contrôle PowerShell reçoit `$LASTEXITCODE` vide après l'appel à l'application GUI ; les vérifications d'installation et du plugin `qwindows.dll` avaient réussi. Le test a été corrigé dans [commit `fa5ba8b`](https://github.com/claudeia206/VMPK/commit/fa5ba8b97e3f0da41ad646ffc3b4a317205584ae) avec `Start-Process -Wait -PassThru` et `Process.ExitCode`.
+- Nouveau head `fa5ba8b97e3f0da41ad646ffc3b4a317205584ae` : Linux ARM64 `in_progress`; Linux x86_64 `queued`, job `133909020010`, sans runner ni étape ; MSVC x64/ARM64, MSYS2 (3 cibles) et macOS x86_64/ARM64 `in_progress`. Aucun artefact du nouveau head n'est encore disponible.
+- Runs : [Linux](https://github.com/claudeia206/VMPK/actions/runs/44045192443) · [MSVC](https://github.com/claudeia206/VMPK/actions/runs/44045192498) · [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/44045192390) · [macOS](https://github.com/claudeia206/VMPK/actions/runs/44045192548) · [contrôle de branche](https://github.com/claudeia206/VMPK/actions/runs/44045199327).
+
+### Jeton d'accès aux artefacts upstream
+
+La documentation de [`dawidd6/action-download-artifact@v27`](https://github.com/dawidd6/action-download-artifact/tree/v27) précise qu'un jeton est requis pour télécharger depuis un autre dépôt et recommande un PAT `public_repo` si nécessaire. Le secret `GH_PAT` n'est pas inspectable ici ; son périmètre doit être confirmé comme accès en lecture limité à `pedrolcl/drumstick`. Aucun secret ni permission n'a été modifié.
+
+Les PR #3 (pin Drumstick) et #7 (`contents: read`) restent bloquées pour Linux x86_64 par le runner self-hosted non attribué. Les tâches P0 restent ouvertes ; aucun statut `queued` ou `in_progress` n'est compté comme succès.
