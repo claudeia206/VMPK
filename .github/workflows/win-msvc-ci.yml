@@ -126,10 +126,15 @@ jobs:
         $env:QML2_IMPORT_PATH = $null
         $env:QT_ROOT_DIR = $null
 
-        & $executable --version
-        if ($LASTEXITCODE -ne 0) {
-          throw "Installed VMPK --version failed with exit code $LASTEXITCODE"
+        $stdoutPath = Join-Path $env:RUNNER_TEMP 'vmpk-version.stdout'
+        $stderrPath = Join-Path $env:RUNNER_TEMP 'vmpk-version.stderr'
+        $process = Start-Process -FilePath $executable -ArgumentList '--version' -WorkingDirectory $installRoot -Wait -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+        if ($process.ExitCode -ne 0) {
+          if (Test-Path -LiteralPath $stdoutPath) { Get-Content -LiteralPath $stdoutPath }
+          if (Test-Path -LiteralPath $stderrPath) { Get-Content -LiteralPath $stderrPath }
+          throw "Installed VMPK --version failed with exit code $($process.ExitCode)"
         }
+        Write-Host "Installed VMPK --version exited with code 0."
 
     - name: '${{ matrix.icon }} Upload Artifacts'
       uses: actions/upload-artifact@v7
