@@ -237,3 +237,35 @@ Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après valida
 - PR #4, nouveau head documentaire `056fd0bff1573b83b7dea83679cec8d1ad913020` : contrôle de branche `success`; Linux x86_64 `queued` (job `133172754551`, aucune étape ni runner attribué visible), Linux ARM64 `in_progress` à `VCPKG Build` (job `133172754742`); MSVC x64/ARM64 et MSYS2 (3 environnements) `success`; macOS x86_64/ARM64 `in_progress`. Runs : [Linux](https://github.com/claudeia206/VMPK/actions/runs/43829994896), [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43829994817), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43829994779), [macOS](https://github.com/claudeia206/VMPK/actions/runs/43829994763), [contrôle](https://github.com/claudeia206/VMPK/actions/runs/43829992130). Aucun artefact de ce nouveau head n'est encore disponible.
 - PR #8, head `2badee225118994528e9fd9c1e52b42cc8c96950` : contrôle de branche `success`; Linux x86_64 `queued` (job `133175118043`, aucune étape ni runner attribué visible), Linux ARM64 `in_progress`; MSVC x64/ARM64, MSYS2 (3 environnements) et macOS x86_64/ARM64 `in_progress`. Les étapes smoke test Windows/macOS ne sont pas encore atteintes et aucun artefact n'est disponible. Runs : [Linux](https://github.com/claudeia206/VMPK/actions/runs/43830712460), [MSVC](https://github.com/claudeia206/VMPK/actions/runs/43830712410), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/43830712413), [macOS](https://github.com/claudeia206/VMPK/actions/runs/43830712378), [contrôle](https://github.com/claudeia206/VMPK/actions/runs/43830712598).
 - Les deux jobs x86_64 encore `queued` (PR #4 et #8) utilisent le label `self-hosted`, sans runner/nom/étape retourné par l'API. Les quatre relances précédentes sont désormais `cancelled`. L'état actuel du service Linux Mint reste à vérifier localement.
+## Suivi du 17 novembre 2026
+
+### PR #1 et branche historique
+
+- [PR #1](https://github.com/claudeia206/VMPK/pull/1) est fermée et fusionnée depuis le 07/11/2026 ; head historique `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2`, commit de fusion [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). La branche `fix/linux-local-midi-dependency` conserve ce head ; `devel` pointe sur le commit de fusion.
+- Contrôle des runs de référence : Linux x86_64 et ARM64, Windows MSVC x64/ARM64, MSYS2 ucrt64/clang64/clangarm64 et macOS x86_64/ARM64 sont tous `success` ([Linux](https://github.com/claudeia206/VMPK/actions/runs/42338619625), [MSVC](https://github.com/claudeia206/VMPK/actions/runs/42338619573), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/42338619619), [macOS](https://github.com/claudeia206/VMPK/actions/runs/42338619626)). Aucune revue GitHub formelle n'est enregistrée ; le diff a été examiné avant la fusion.
+
+### CI de la PR documentaire #4 — head `224f0281def38b17169862aa40eb46ab3acc4405`
+
+- Linux ARM64 : `success`, AppDir et AppImage disponibles ; Linux x86_64 : `queued`, job `133176034004`, label `self-hosted`, `runner_id=0`, nom vide et aucune étape ([run Linux](https://github.com/claudeia206/VMPK/actions/runs/43830995260)).
+- Windows MSVC x64/ARM64 : `success`, répertoires d'installation et installeurs NSIS disponibles ([run](https://github.com/claudeia206/VMPK/actions/runs/43830995221)).
+- Windows MSYS2 ucrt64/clang64/clangarm64 : `success`, aucun artefact de packaging publié ([run](https://github.com/claudeia206/VMPK/actions/runs/43830995322)).
+- macOS x86_64/ARM64 : `success`, ZIP des bundles `.app` disponibles ([run](https://github.com/claudeia206/VMPK/actions/runs/43830995339)).
+- Le job x86_64 n'a exécuté aucune étape : ne pas classer ce résultat comme succès ou échec de compilation. Le service local du runner doit être contrôlé sur Linux Mint.
+
+### PR #8 — tests post-packaging Windows/macOS
+
+- Head initial `2badee225118994528e9fd9c1e52b42cc8c96950` : Linux ARM64 `success`, Linux x86_64 `queued` sans runner ; MSYS2 (3 cibles) et macOS (2 architectures) `success`. Les deux jobs Windows MSVC ont échoué à `Smoke-test NSIS installer`, après compilation, installation NSIS et vérification de `vmpk.exe`/`platforms/qwindows.dll`.
+- Les logs Windows montrent que le contrôle `$LASTEXITCODE` reçoit une valeur vide. Le code source `src/main.cpp` retourne 0 pour `--version`; l'échec identifié concerne donc la récupération du code de sortie dans le test PowerShell, pas une erreur de compilation démontrée.
+- Correctif dans [commit `fa5ba8b`](https://github.com/claudeia206/VMPK/commit/fa5ba8b97e3f0da41ad646ffc3b4a317205584ae) : lancer le binaire installé avec `Start-Process -Wait -PassThru` et vérifier `Process.ExitCode`, en conservant stdout/stderr en cas d'échec.
+- Nouveau head `fa5ba8b97e3f0da41ad646ffc3b4a317205584ae` : contrôle de branche `success`; Linux ARM64 `in_progress` à VCPKG Build ; Linux x86_64 `queued`, job `133909020010`, label `self-hosted`, `runner_id=null`, aucun runner ni étape ; MSVC x64/ARM64, MSYS2 (3 cibles) et macOS x86_64/ARM64 `in_progress`. Aucun artefact du nouveau head n'est encore disponible ([Linux](https://github.com/claudeia206/VMPK/actions/runs/44045192443), [MSVC](https://github.com/claudeia206/VMPK/actions/runs/44045192498), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/44045192390), [macOS](https://github.com/claudeia206/VMPK/actions/runs/44045192548), [contrôle](https://github.com/claudeia206/VMPK/actions/runs/44045199327)).
+
+### Jeton de téléchargement Drumstick upstream
+
+- La documentation de [`dawidd6/action-download-artifact@v27`](https://github.com/dawidd6/action-download-artifact/tree/v27) indique qu'un `github_token` est requis pour un artefact provenant d'un autre dépôt et mentionne un PAT avec le scope `public_repo` si nécessaire.
+- Les workflows MSVC/MSYS2/macOS téléchargent depuis le dépôt public `pedrolcl/drumstick` et utilisent `secrets.GH_PAT || github.token`. La valeur et les permissions effectives du secret ne sont pas accessibles depuis cette connexion ; aucune modification de secret ni réduction/extension de permissions n'est effectuée. Action requise : vérifier que `GH_PAT` est limité à la lecture du dépôt public upstream (scope classique `public_repo`, ou jeton fine-grained avec accès de lecture nécessaire aux Actions de ce seul dépôt).
+
+### Blocages P0 et prochaine action
+
+- Le pin Drumstick de PR #3 et `permissions: contents: read` de PR #7 restent validés sur ARM64, mais non validés sur Linux x86_64 : les jobs correspondants ont été `cancelled` sans runner ni étape.
+- Le runner Linux Mint doit être rendu disponible pour les jobs `self-hosted` x86_64 ; contrôler `sudo systemctl status actions.runner.claudeia206-VMPK.linux-UX303LA.service --no-pager` puis `sudo journalctl -u actions.runner.claudeia206-VMPK.linux-UX303LA.service -n 80 --no-pager`.
+- Garder les tâches P0 ouvertes jusqu'à validation x86_64 et réussite des smoke tests Windows corrigés. Ne pas commencer P2/P3.
