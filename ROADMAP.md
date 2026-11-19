@@ -28,7 +28,7 @@
 | Domaine | Priorité | État | Condition de sortie |
 |---|---:|---|---|
 | PR #1 et CI de référence | P0 | Terminée (07/11/2026) | PR #1 fusionnée ; CI verte sur Linux x86_64/ARM64, Windows MSVC/MSYS2 et macOS |
-| Cohérence CI et dépendances | P0 | En cours — smoke test AppDir/AppImage Linux validé ; pin Drumstick et permissions Linux x86_64 encore à confirmer | PR #2/#3/#5/#7 x86_64 cancelled sans runner ; PR #4/#8 x86_64 queued sans runner visible |
+| Cohérence CI et dépendances | P0 | En cours — smoke tests Linux, Windows et macOS validés ; sécurité du workflow, pin Drumstick x86_64, permissions x86_64 et portée GH_PAT restent ouverts | PR #2/#3/#4/#5/#7/#8 : jobs Linux x86_64 cancelled avec runner_id=0 et zéro étape |
 | Documentation d'installation et dépannage | P1 | En cours | Matrice CI documentée dans [PR #4](https://github.com/claudeia206/VMPK/pull/4) ; guide installation/MIDI encore à faire |
 | Tests de non-régression | P1 | À faire | Tests automatisés utiles + scénarios manuels documentés |
 | Bugs et fonctionnalités demandées | P2 | À planifier | Priorité confirmée par issues et faisabilité |
@@ -64,12 +64,12 @@ sudo journalctl -u actions.runner.claudeia206-VMPK.linux-UX303LA.service -n 80 -
 ## Phase 1 — CI, compilation et packaging (P0)
 
 - [x] Auditer les déclencheurs : workflows Linux/Windows/macOS sur push et PR vers `devel`/`master`, plus `workflow_dispatch` ; aucun déclencheur de tag n'est présent. Le workflow `pull_request_target` vérifie seulement les branches, sans checkout ni commande provenant de la PR.
-- [ ] Valider les permissions minimales explicites : PR #5 propose `permissions: {}` pour `pull_request_target` ; PR #7 propose `contents: read` pour Linux. Le run ARM64 de PR #7 est vert ; la relance x86_64 est `queued` (job `132750642066`). Windows/MSYS2/macOS restent à auditer pour leurs téléchargements d'artefacts upstream.
+- [ ] Valider les permissions minimales et intégrer le correctif de sécurité : PR #5 propose `permissions: {}` et sort les refs non fiables du script `pull_request_target`, mais `devel` conserve encore l'interpolation directe ; le contrôle vert de PR #5 exécute le workflow de base et ne valide pas son propre patch. PR #7 (`contents: read`) réussit sur ARM64 ; Linux x86_64 est `cancelled` sans runner (job `132750642066`). Les permissions effectives des téléchargements upstream restent à confirmer.
 - [x] Relever les versions et les écarts entre plateformes ; la matrice est documentée dans [docs/CI-BUILD-MATRIX.md](docs/CI-BUILD-MATRIX.md) (PR #4). Qt 5 est disponible via `USE_QT5` dans CMake mais non testé par les workflows CI actuels.
-- [ ] Vérifier la construction de Drumstick depuis une source/version déterministe sur Linux. Le commit upstream fixe `23da19d05ad511bd9140a2d00eedead2ae5bac1a` existe dans `pedrolcl/drumstick` et compile sur ARM64 dans PR #3 ; la relance x86_64 est `queued` (job `132750626086`), sans étape ni runner attribué visible.
-- [x] Vérifier les sources d'artefacts Drumstick Windows/macOS et le fallback `${{ secrets.GH_PAT || github.token }}` ; les builds PR #1 sont verts. La sélection upstream `devel` reste mobile et donc non reproductible au niveau du run.
+- [ ] Vérifier la construction de Drumstick depuis une source/version déterministe sur Linux. Le commit upstream fixe `23da19d05ad511bd9140a2d00eedead2ae5bac1a` existe et compile sur ARM64 dans PR #3 ; Linux x86_64 reste non validé car le job `132750626086` est `cancelled`, `runner_id=0`, sans étape ni log.
+- [ ] Confirmer le périmètre effectif de `GH_PAT` pour les téléchargements d'artefacts Drumstick Windows/macOS. Le fallback `${{ secrets.GH_PAT || github.token }}` est présent et les téléchargements réussissent dans les runs PR #1/#8, mais la valeur et les droits du secret ne sont pas accessibles ; la branche upstream `devel` reste mobile.
 - [x] Vérifier le runtime des AppDir/AppImage Linux : PR #6, head `da16f0e7e3ec0986965bb7e4c096da5a9c0977c8`, Linux x86_64 et ARM64 `success` ; `ldd` résout les bibliothèques Qt depuis `AppDir/usr/lib`, `AppRun --version` et l'AppImage `--appimage-extract-and-run --version` passent sous Xvfb ([run Linux](https://github.com/claudeia206/VMPK/actions/runs/43578697576)). Le test ne couvre pas un périphérique MIDI physique.
-- [ ] Étendre les tests d'installation/lancement à Windows et macOS : le smoke test Linux AppDir/AppImage est validé dans PR #6 ; les installeurs MSVC et ZIP macOS sont produits mais leur installation/lancement post-packaging n'est pas encore testé. MSYS2 compile sans publier d'artefact.
+- [x] Tester l'installation et le lancement des paquets publiés : Linux AppDir/AppImage x86_64 et ARM64 dans PR #6 ; installeurs NSIS Windows x64/ARM64 et bundles macOS x86_64/ARM64 dans PR #8, smoke tests `--version` terminés en success. MSYS2 reste une cible de compilation sans artefact de packaging.
 - [ ] Réduire les duplications YAML et ajouter des timeouts/cache seulement si cela améliore fiabilité ou durée sans masquer les erreurs.
 - [x] Documenter le pin temporaire Qt Linux 6.11.1, la cause et les conditions de réévaluation dans [la matrice CI](docs/CI-BUILD-MATRIX.md) ; état de référence 09/11/2026.
 
@@ -269,3 +269,38 @@ Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après valida
 - Le pin Drumstick de PR #3 et `permissions: contents: read` de PR #7 restent validés sur ARM64, mais non validés sur Linux x86_64 : les jobs correspondants ont été `cancelled` sans runner ni étape.
 - Le runner Linux Mint doit être rendu disponible pour les jobs `self-hosted` x86_64 ; contrôler `sudo systemctl status actions.runner.claudeia206-VMPK.linux-UX303LA.service --no-pager` puis `sudo journalctl -u actions.runner.claudeia206-VMPK.linux-UX303LA.service -n 80 --no-pager`.
 - Garder les tâches P0 ouvertes jusqu'à validation x86_64 et réussite des smoke tests Windows corrigés. Ne pas commencer P2/P3.
+
+## Contrôle factuel — 19 novembre 2026
+
+### PR #1 — état définitif
+
+- [PR #1](https://github.com/claudeia206/VMPK/pull/1) est `closed/merged` depuis le 07/11/2026. Head historique `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2` ; commit de fusion [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). La branche `fix/linux-local-midi-dependency` pointe toujours sur ce head.
+- Les jobs finaux du head PR #1 sont tous `success` : Linux x86_64 (runner Linux Mint, job `128301115613`) et ARM64 (`128301115414`) dans [run Linux](https://github.com/claudeia206/VMPK/actions/runs/42338619625) ; Windows MSVC x64/ARM64 dans [run MSVC](https://github.com/claudeia206/VMPK/actions/runs/42338619573) ; MSYS2 ucrt64/clang64/clangarm64 dans [run MSYS2](https://github.com/claudeia206/VMPK/actions/runs/42338619619) ; macOS x86_64/ARM64 dans [run macOS](https://github.com/claudeia206/VMPK/actions/runs/42338619626).
+- Artefacts PR #1 présents et non expirés au contrôle : AppDir/AppImage Linux x86_64 et ARM64 ; répertoires MSVC et installeurs NSIS x64/ARM64 ; ZIP macOS x86_64/ARM64. Aucun artefact MSYS2 n'est publié. Aucune revue GitHub formelle n'est enregistrée ; le diff avait été examiné avant fusion.
+
+### PR #4 — head `197896fe66824d3ee93b92e2be37354b234fb243`
+
+- Linux ARM64 `success` ; Windows MSVC x64/ARM64 `success` ; MSYS2 ucrt64/clang64/clangarm64 `success` ; macOS x86_64/ARM64 `success`. Artefacts ARM64 AppDir/AppImage, installations/installeurs MSVC x64/ARM64 et ZIP macOS x86_64/ARM64 présents ; pas d'artefact MSYS2.
+- Linux x86_64 : job `133910825539` terminé `cancelled`, `runner_id=0`, `runner_name` vide, label `self-hosted`, zéro étape. Le téléchargement des logs renvoie `404 BlobNotFound` ; aucune cause de compilation ne peut être déduite. [Run Linux](https://github.com/claudeia206/VMPK/actions/runs/44045734177), [MSVC](https://github.com/claudeia206/VMPK/actions/runs/44045734042), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/44045734087), [macOS](https://github.com/claudeia206/VMPK/actions/runs/44045734015).
+
+### PR #8 — head `fa5ba8b97e3f0da41ad646ffc3b4a317205584ae`
+
+- Linux ARM64 `success` et AppDir/AppImage présents ; Linux x86_64 job `133909020010` `cancelled`, `runner_id=0`, aucune étape. Les logs sont absents (`404 BlobNotFound`). [Run Linux](https://github.com/claudeia206/VMPK/actions/runs/44045192443).
+- Windows MSVC x64 et ARM64 `success`, y compris `Smoke-test NSIS installer` ; installations et installeurs présents. [Run MSVC](https://github.com/claudeia206/VMPK/actions/runs/44045192498).
+- MSYS2 ucrt64, clang64 et clangarm64 `success` ; aucun artefact de packaging attendu. [Run MSYS2](https://github.com/claudeia206/VMPK/actions/runs/44045192390).
+- macOS x86_64 et ARM64 `success`, y compris `Smoke-test packaged macOS app` ; les deux ZIP sont présents. [Run macOS](https://github.com/claudeia206/VMPK/actions/runs/44045192548).
+- Le premier head de PR #8 avait échoué sur Windows à la récupération de `$LASTEXITCODE` ; le correctif `Start-Process -Wait -PassThru` est maintenant validé sur les deux architectures Windows. Aucun échec n'est observé sur le head courant.
+
+### Relances Linux x86_64 des PR #2/#3/#5/#7
+
+- Jobs `132750619127`, `132750626086`, `132750633518` et `132750642066` tous `cancelled`, `runner_id=0`, label `self-hosted`, nom vide et zéro étape. Les logs renvoient `404 BlobNotFound` ; il n'y a pas de log de compilation. Les jobs ARM64 et les autres plateformes des runs correspondants sont `success`.
+- Ces annulations ne sont ni des échecs de compilation ni des validations x86_64. Le pin Drumstick (PR #3) et `contents: read` (PR #7) restent donc non validés sur Linux x86_64.
+
+### Priorités P0 restantes
+
+1. Rétablir et vérifier le runner Linux Mint `actions.runner.claudeia206-VMPK.linux-UX303LA.service`, puis relancer uniquement les jobs x86_64 ciblés des PR #3, #4, #7 et #8 après confirmation du runner.
+2. Examiner et intégrer, après validation, le correctif `pull_request_target` de PR #5 : `devel` conserve encore l'interpolation directe de refs non fiables dans le script shell ; aucune review formelle n'est enregistrée.
+3. Confirmer le périmètre minimal du secret `GH_PAT` ou vérifier que le fallback `github.token` suffit ; le secret n'est pas inspectable depuis cette connexion.
+4. Épingler une révision déterministe de Drumstick sur Linux et obtenir le succès x86_64 ; ARM64 seul ne suffit pas.
+
+Aucune fusion automatique, aucun changement de secret ou de permission, et aucune validation MIDI matérielle ne sont revendiqués. Les tâches P1/P2/P3 restent suspendues tant que ces points P0 sont ouverts.
