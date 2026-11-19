@@ -1,6 +1,6 @@
 # Matrice CI et reproductibilité
 
-> État vérifié le **15 novembre 2026**, sur la base de `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel. Les résultats par PR sont datés dans les sections de suivi ci-dessous.
+> Matrice technique basée sur `devel` au commit [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Dernier contrôle des runs PR #1, #4 et #8 : **19 novembre 2026**. Les versions listées sont celles déclarées dans les workflows, pas une promesse de support universel ; les mises à jour datées ci-dessous priment sur les historiques précédents.
 
 ## Matrice de compilation
 
@@ -206,3 +206,58 @@ Liens : [Linux](https://github.com/claudeia206/VMPK/actions/runs/43830995260) ·
 La documentation de [`dawidd6/action-download-artifact@v27`](https://github.com/dawidd6/action-download-artifact/tree/v27) précise qu'un jeton est requis pour télécharger depuis un autre dépôt et recommande un PAT `public_repo` si nécessaire. Le secret `GH_PAT` n'est pas inspectable ici ; son périmètre doit être confirmé comme accès en lecture limité à `pedrolcl/drumstick`. Aucun secret ni permission n'a été modifié.
 
 Les PR #3 (pin Drumstick) et #7 (`contents: read`) restent bloquées pour Linux x86_64 par le runner self-hosted non attribué. Les tâches P0 restent ouvertes ; aucun statut `queued` ou `in_progress` n'est compté comme succès.
+
+## Contrôle CI et packaging — 19 novembre 2026
+
+### PR #1 fusionnée : référence de validation
+
+- Head historique : `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2` ; merge dans `devel` : [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). La branche `fix/linux-local-midi-dependency` pointe toujours sur ce head.
+- Linux x86_64 job `128301115613` et ARM64 job `128301115414` : `success`, étapes de compilation et d'upload comprises ([run Linux](https://github.com/claudeia206/VMPK/actions/runs/42338619625)).
+- Windows MSVC x64/ARM64 : `success`, répertoires d'installation et installeurs NSIS présents ([run](https://github.com/claudeia206/VMPK/actions/runs/42338619573)). MSYS2 ucrt64/clang64/clangarm64 : `success`, compilation seulement, aucun artefact ([run](https://github.com/claudeia206/VMPK/actions/runs/42338619619)). macOS x86_64/ARM64 : `success`, ZIP présents ([run](https://github.com/claudeia206/VMPK/actions/runs/42338619626)).
+- Artefacts Linux PR #1 : AppDir x86_64 `13563548434`, AppImage x86_64 `13563308832`, AppDir ARM64 `13560702328`, AppImage ARM64 `13560647699`. Artefacts MSVC : installeurs x64 `13560418083` et ARM64 `13560950898`, répertoires x64 `13560562568` et ARM64 `13560876240`. ZIP macOS x86_64 `13560133240`, ARM64 `13560811981`. Tous non expirés au contrôle.
+
+### PR #4 — head `197896fe66824d3ee93b92e2be37354b234fb243`
+
+| Cible | Conclusion | Détail |
+|---|---|---|
+| Linux x86_64 | `cancelled` | Job `133910825539`, `runner_id=0`, nom vide, label `self-hosted`, zéro étape ; aucun log de build, téléchargement des logs `404 BlobNotFound` |
+| Linux ARM64 | `success` | AppDir et AppImage présents |
+| Windows MSVC x64/ARM64 | `success` | Installations et installeurs NSIS présents |
+| Windows MSYS2 ucrt64/clang64/clangarm64 | `success` | Compilation ; aucun artefact de packaging publié |
+| macOS x86_64/ARM64 | `success` | ZIP `.app` présents |
+
+Runs : [Linux](https://github.com/claudeia206/VMPK/actions/runs/44045734177), [MSVC](https://github.com/claudeia206/VMPK/actions/runs/44045734042), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/44045734087), [macOS](https://github.com/claudeia206/VMPK/actions/runs/44045734015). Artefacts : AppDir ARM64 `14311538650`, AppImage ARM64 `14311314443`, installations MSVC x64/ARM64 `14310739866`/`14311522381`, installeurs `14310939598`/`14311647413`, ZIP macOS x86_64/ARM64 `14312290261`/`14310494613`.
+
+### PR #8 — head `fa5ba8b97e3f0da41ad646ffc3b4a317205584ae`
+
+| Cible | Conclusion | Détail |
+|---|---|---|
+| Linux x86_64 | `cancelled` | Job `133909020010`, `runner_id=0`, nom vide, label `self-hosted`, zéro étape ; logs `404 BlobNotFound` |
+| Linux ARM64 | `success` | AppDir et AppImage présents ; pas de smoke test Linux supplémentaire dans cette PR |
+| Windows MSVC x64/ARM64 | `success` | Installation NSIS et étape `Smoke-test NSIS installer` réussies sur les deux architectures |
+| Windows MSYS2 ucrt64/clang64/clangarm64 | `success` | Compilation ; aucun artefact de packaging publié |
+| macOS x86_64/ARM64 | `success` | Étape `Smoke-test packaged macOS app` réussie sur les deux architectures ; ZIP présents |
+
+Runs : [Linux](https://github.com/claudeia206/VMPK/actions/runs/44045192443), [MSVC](https://github.com/claudeia206/VMPK/actions/runs/44045192498), [MSYS2](https://github.com/claudeia206/VMPK/actions/runs/44045192390), [macOS](https://github.com/claudeia206/VMPK/actions/runs/44045192548). Artefacts : AppDir ARM64 `14312136962`, AppImage ARM64 `14312446254`, installations MSVC x64/ARM64 `14310903889`/`14311077660`, installeurs `14310898926`/`14311846167`, ZIP macOS x86_64/ARM64 `14311228986`/`14311761045`.
+- Le head précédent de PR #8 avait échoué uniquement dans le smoke test Windows car `$LASTEXITCODE` était vide. Le correctif `Start-Process -Wait -PassThru` et le contrôle de `Process.ExitCode` passent maintenant en x64 et ARM64 ; aucun échec sur le head courant.
+
+### État du runner self-hosted Linux Mint
+
+- Les jobs x86_64 des PR #2, #3, #4, #5, #7 et #8 sont `cancelled`, avec `runner_id=0`, `runner_name` vide, label `self-hosted` et zéro étape. Les quatre relances #2/#3/#5/#7 ont les IDs `132750619127`, `132750626086`, `132750633518`, `132750642066` ; PR #4/#8 ont `133910825539` et `133909020010`.
+- Les logs des jobs annulés sont absents ; l'API retourne `404 BlobNotFound`. Il n'existe donc aucune étape de compilation permettant d'attribuer une cause code. Ce blocage est l'absence d'attribution du runner, pas un échec démontré du build.
+- Contrôle local à effectuer sur Linux Mint avant toute relance :
+
+```bash
+sudo systemctl status actions.runner.claudeia206-VMPK.linux-UX303LA.service --no-pager
+sudo journalctl -u actions.runner.claudeia206-VMPK.linux-UX303LA.service -n 80 --no-pager
+```
+
+### Points P0 toujours ouverts
+
+- PR #3 épingle Drumstick à `23da19d05ad511bd9140a2d00eedead2ae5bac1a`, mais la CI ARM64 seule est validée ; x86_64 est bloqué par le runner. Le workflow Linux de `devel` clone encore la branche upstream mobile `devel`.
+- PR #7 réduit les permissions Linux à `contents: read`, validé sur ARM64 seulement ; x86_64 reste non validé.
+- PR #5 corrige l'injection potentielle dans `pull_request_target` et propose `permissions: {}`. Le workflow actuellement sur `devel` conserve l'interpolation directe de `github.head_ref`/`github.base_ref` ; le run vert `pull_request_target` de la PR exécute la version de base et ne valide pas le patch. Aucune review formelle n'est enregistrée.
+- Les workflows MSVC/MSYS2/macOS utilisent `secrets.GH_PAT || github.token` pour télécharger depuis `pedrolcl/drumstick`. Les téléchargements CI réussissent, mais le secret et son périmètre ne sont pas inspectables ici ; ne pas déclarer le scope minimal vérifié.
+- Les smoke tests post-packaging sont désormais validés sur Linux via PR #6 (AppDir/AppImage x86_64 et ARM64), Windows via PR #8 (NSIS x64/ARM64) et macOS via PR #8 (ZIP x86_64/ARM64). MSYS2 ne publie pas de paquet à tester.
+
+Les jobs `cancelled` ne sont jamais assimilés à `success` ou `failure` de compilation. Aucune fusion, modification de secret, extension de permission ou validation MIDI matérielle n'est revendiquée.
