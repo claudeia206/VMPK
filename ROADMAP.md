@@ -304,3 +304,41 @@ Cette roadmap est un plan évolutif. Les cases ne sont cochées qu'après valida
 4. Épingler une révision déterministe de Drumstick sur Linux et obtenir le succès x86_64 ; ARM64 seul ne suffit pas.
 
 Aucune fusion automatique, aucun changement de secret ou de permission, et aucune validation MIDI matérielle ne sont revendiqués. Les tâches P1/P2/P3 restent suspendues tant que ces points P0 sont ouverts.
+
+
+## Contrôle factuel — 21 novembre 2026
+
+### PR #1 et branche historique
+
+- [PR #1](https://github.com/claudeia206/VMPK/pull/1) reste `closed/merged`. Head historique de `fix/linux-local-midi-dependency` : `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2` ; commit de fusion : [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2). Aucun nouveau commit sur cette branche historique n'est constaté.
+- La validation de référence du head PR #1 reste verte sur Linux x86_64 et ARM64, Windows MSVC, MSYS2 et macOS (runs documentés ci-dessus). Aucune action sur la branche fusionnée n'est nécessaire.
+
+### PR #4 — head documentaire `9013c5db481038eddf89f2b0c65749f764fc1f05`
+
+- Contrôle de branche : `success` ([run 44490493230](https://github.com/claudeia206/VMPK/actions/runs/44490493230)).
+- Linux ARM64 : `success`, job `135444576120`, y compris compilation Drumstick depuis les sources, compilation VMPK, installation et upload AppDir/AppImage. Artefacts non expirés : AppDir [14513407835](https://github.com/claudeia206/VMPK/actions/runs/44490496113/artifacts/14513407835) et AppImage [14513502426](https://github.com/claudeia206/VMPK/actions/runs/44490496113/artifacts/14513502426).
+- Linux x86_64 : job `135444576019` terminé `cancelled` le 20/11/2026 après 24 heures d'attente ; label `self-hosted`, `runner_id=0`, nom de runner vide, aucune étape exécutée. Le téléchargement des logs renvoie `404 BlobNotFound`. Ce n'est ni un échec de compilation ni un succès ; le runner n'a jamais été attribué. [Run Linux](https://github.com/claudeia206/VMPK/actions/runs/44490496113).
+- Windows MSVC x64/ARM64 : tous les steps de téléchargement Drumstick, vcpkg, compilation, packaging, installation et upload sont `success` ([run 44490496189](https://github.com/claudeia206/VMPK/actions/runs/44490496189)).
+- Windows MSYS2 ucrt64/clang64/clangarm64 : configuration, téléchargement Drumstick, CMake et compilation `success` ([run 44490496086](https://github.com/claudeia206/VMPK/actions/runs/44490496086)). Aucun artefact de packaging n'est prévu par ce workflow.
+- macOS x86_64/ARM64 : compilation, packaging et upload `success` ([run 44490496146](https://github.com/claudeia206/VMPK/actions/runs/44490496146)).
+- Aucun job de compilation n'est `queued` ou `in_progress` sur ces runs : Linux x86_64 est terminalement `cancelled`, toutes les autres cibles listées sont terminalement `success`.
+
+### PR #8 — smoke tests des paquets
+
+- Head `fa5ba8b97e3f0da41ad646ffc3b4a317205584ae` inchangé. Linux ARM64, Windows MSVC x64/ARM64 (smoke test NSIS inclus), MSYS2 (3 environnements) et macOS x86_64/ARM64 (smoke test du bundle inclus) sont `success` dans les runs du 17/11 référencés ci-dessus.
+- Linux x86_64, job `133909020010`, est `cancelled`, `runner_id=0`, label `self-hosted`, nom vide et zéro étape ; logs indisponibles (`404 BlobNotFound`). Le contrôle de branche du 19/11 est `success` ([run 44490653180](https://github.com/claudeia206/VMPK/actions/runs/44490653180)) mais ne remplace pas le build Linux manquant.
+
+### PR #2, #3, #5 et #7 — état des validations Linux
+
+- Les dernières matrices de build documentées restent : Linux ARM64 et les autres plateformes réussis ; Linux x86_64 annulé sans runner attribué, sans étape ni log de compilation. Les contrôles de branche plus récents sont `success`, mais ne constituent pas une nouvelle validation du build Linux.
+- PR #3 (pin Drumstick) et PR #7 (`contents: read`) restent donc non validées sur x86_64.
+- PR #5 : la revue statique est enregistrée en état `COMMENTED`, pas `APPROVED`. Le correctif du workflow `pull_request_target` est cohérent au plan statique ; le contrôle `pull_request_target` vert exécute la version de base et ne valide pas le fichier proposé.
+
+### Blocages P0 inchangés
+
+1. Le runner Linux Mint doit être vérifié localement avant toute relance ciblée. Le statut GitHub `runner_id=0` et l'absence d'étapes démontrent l'absence d'attribution, mais ne permettent pas de connaître l'état systemd local.
+2. Le pin Drumstick x86_64 et la permission Linux `contents: read` x86_64 restent à valider sur un vrai job.
+3. Le périmètre effectif de `GH_PAT` reste non inspectable depuis cette connexion ; aucune modification de secret ou de permission n'a été faite.
+4. La revue formelle et l'intégration du correctif de sécurité PR #5 restent à finaliser.
+
+Aucune tâche P0 supplémentaire n'est cochée sur la seule base d'un job annulé. Les phases P1/P2/P3 restent suspendues par les blocages P0. Aucune fusion, aucun changement de secret et aucune modification directe de `devel` ou `master` n'ont été effectués.
