@@ -342,3 +342,52 @@ Aucune fusion automatique, aucun changement de secret ou de permission, et aucun
 4. La revue formelle et l'intégration du correctif de sécurité PR #5 restent à finaliser.
 
 Aucune tâche P0 supplémentaire n'est cochée sur la seule base d'un job annulé. Les phases P1/P2/P3 restent suspendues par les blocages P0. Aucune fusion, aucun changement de secret et aucune modification directe de `devel` ou `master` n'ont été effectués.
+
+
+## Contrôle CI et roadmap — 24 novembre 2026
+
+### PR #1 — référence finale
+
+- PR #1 est fermée et fusionnée dans `devel` le 07/11/2026. Head historique : `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2` ; commit de fusion : [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2).
+- Runs associés au head historique : Linux [42338619625](https://github.com/claudeia206/VMPK/actions/runs/42338619625), MSVC [42338619573](https://github.com/claudeia206/VMPK/actions/runs/42338619573), MSYS2 [42338619619](https://github.com/claudeia206/VMPK/actions/runs/42338619619), macOS [42338619626](https://github.com/claudeia206/VMPK/actions/runs/42338619626) : tous les jobs sont terminés en `success`.
+- Linux x86_64 et ARM64 : AppDir et AppImage présents ; MSVC x64/ARM64 : répertoires d'installation et installeurs présents ; macOS x86_64/ARM64 : ZIP présents ; MSYS2 : compilation réussie, aucun artefact de packaging prévu.
+- Les artefacts vérifiés lors de ce contrôle sont non expirés (expiration API : 05/02/2027).
+
+### PR #4 — head documentaire `9013c5db481038eddf89f2b0c65749f764fc1f05`
+
+Runs terminés sur ce head :
+
+| Cible | État terminal | Preuve |
+|---|---|---|
+| Linux x86_64 | `cancelled` | job `135444576019`, [run Linux](https://github.com/claudeia206/VMPK/actions/runs/44490496113) |
+| Linux ARM64 | `success` | job `135444576120`, même run |
+| Windows MSVC x64/ARM64 | `success` | [run MSVC](https://github.com/claudeia206/VMPK/actions/runs/44490496189) |
+| Windows MSYS2 ucrt64/clang64/clangarm64 | `success` | [run MSYS2](https://github.com/claudeia206/VMPK/actions/runs/44490496086) |
+| macOS x86_64/ARM64 | `success` | [run macOS](https://github.com/claudeia206/VMPK/actions/runs/44490496146) |
+
+Artefacts non expirés au contrôle (expiration API : 17/02/2027) :
+- Linux ARM64 : AppImage `14513502426`, AppDir `14513407835`.
+- Windows MSVC : installeur x64 `14513645758`, installeur ARM64 `14513550445`, installation x64 `14512684780`, installation ARM64 `14512229398`.
+- macOS : ZIP x86_64 `14512962561`, ZIP ARM64 `14511814159`.
+- MSYS2 ne publie pas d'artefact ; aucun artefact Linux x86_64 n'a été produit sur ce run.
+
+Diagnostic Linux x86_64 : l'API du job retourne `status=completed`, `conclusion=cancelled`, `steps=null` et `logs_url=null`. Le téléchargement des logs renvoie `404 BlobNotFound` (contrôle du 24/11/2026). Le workflow demande un runner `self-hosted`, mais le résultat courant ne fournit ni identifiant ni nom de runner. Aucune compilation n'a démarré ; ne pas qualifier ce statut d'échec de code. Le runner doit être contrôlé sur Linux Mint avant une relance.
+
+### Autres PR ouvertes — derniers runs associés aux heads connus
+
+- PR #2, #3, #5, #7 et #8 : Linux x86_64 est `cancelled` ; Linux ARM64, Windows MSVC, MSYS2 et macOS sont `success` sur les derniers runs relevés. Les jobs x86_64 annulés n'ont pas exécuté d'étape ; ils ne constituent ni une compilation réussie ni un échec de compilation.
+- PR #6 : Linux x86_64 et ARM64, Windows MSVC, MSYS2 et macOS sont `success`. Le smoke test AppDir/AppImage Linux reste validé sur les deux architectures ([run Linux](https://github.com/claudeia206/VMPK/actions/runs/43578697576)).
+- PR #8 : le correctif du smoke test NSIS PowerShell est validé sur Windows x64/ARM64 ; le smoke test macOS est également validé sur x86_64/ARM64 ([run MSVC](https://github.com/claudeia206/VMPK/actions/runs/44045192498), [run macOS](https://github.com/claudeia206/VMPK/actions/runs/44045192548)).
+- Aucun job des derniers runs sélectionnés n'est encore `queued` ou `in_progress`. Aucun échec terminal n'est constaté sur leurs heads actuels ; les annulations Linux x86_64 restent le blocage commun.
+
+### Revue et tâches P0
+
+- PR #4 est toujours ouverte et ne comporte aucune revue GitHub formelle enregistrée.
+- PR #5 comporte une revue `COMMENTED` favorable sur le head `b8b7750`, pas une approbation. Le workflow de `devel` conserve encore l'interpolation directe de `github.head_ref` et `github.base_ref` dans `run:`; la correction de PR #5 utilise des variables d'environnement et `permissions: {}`. Ne pas assimiler le contrôle `pull_request_target` de la branche de base à la validation du patch.
+- PR #3 épingle Drumstick au commit upstream existant [23da19d](https://github.com/pedrolcl/drumstick/commit/23da19d05ad511bd9140a2d00eedead2ae5bac1a) ; son test Linux ARM64 réussit, mais x86_64 n'a pas été exécuté. Le workflow sur `devel` clone toujours la branche upstream mobile `devel`.
+- PR #7 valide `contents: read` sur ARM64 seulement ; x86_64 reste non validé.
+- Le secret `GH_PAT` et son périmètre effectif ne sont pas inspectables depuis cette connexion. Aucun secret ni droit n'a été modifié.
+- Aucune issue ouverte n'a été retournée par la recherche du dépôt.
+- La branche historique `fix/linux-local-midi-dependency` contient encore l'ancienne roadmap (blob `eac66f6`, identique à celle de `devel`). Les mises à jour de suivi sont maintenues sur la branche documentaire de PR #4 ; la branche historique de PR #1 n'est pas utilisée comme branche de documentation active.
+
+Aucune tâche P0 supplémentaire n'est cochée sur la base d'un job annulé. Aucun changement de code, secret ou permission, aucune fusion et aucune relance de workflow n'ont été effectués pendant ce contrôle.
