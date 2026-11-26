@@ -28,7 +28,7 @@
 | Domaine | Priorité | État | Condition de sortie |
 |---|---:|---|---|
 | PR #1 et CI de référence | P0 | Terminée (07/11/2026) | PR #1 fusionnée ; CI verte sur Linux x86_64/ARM64, Windows MSVC/MSYS2 et macOS |
-| Cohérence CI et dépendances | P0 | En cours — smoke tests Linux, Windows et macOS validés ; sécurité du workflow, pin Drumstick x86_64, permissions x86_64 et portée GH_PAT restent ouverts | PR #2/#3/#4/#5/#7/#8 : jobs Linux x86_64 cancelled avec runner_id=0 et zéro étape |
+| Cohérence CI et dépendances | P0 | En cours — smoke tests validés ; sécurité PR #5 testée sur son head mais non intégrée ; pin Drumstick x86_64, permissions x86_64 et portée GH_PAT restent ouverts | PR #2/#3/#4/#7/#8 : Linux x86_64 cancelled sans runner ; PR #5 head 78a8f3e : Linux x86_64 queued sans runner ; PR #4 macOS ARM64 cancelled sans étape |
 | Documentation d'installation et dépannage | P1 | En cours | Matrice CI documentée dans [PR #4](https://github.com/claudeia206/VMPK/pull/4) ; guide installation/MIDI encore à faire |
 | Tests de non-régression | P1 | À faire | Tests automatisés utiles + scénarios manuels documentés |
 | Bugs et fonctionnalités demandées | P2 | À planifier | Priorité confirmée par issues et faisabilité |
@@ -391,3 +391,61 @@ Diagnostic Linux x86_64 : l'API du job retourne `status=completed`, `conclusion=
 - La branche historique `fix/linux-local-midi-dependency` contient encore l'ancienne roadmap (blob `eac66f6`, identique à celle de `devel`). Les mises à jour de suivi sont maintenues sur la branche documentaire de PR #4 ; la branche historique de PR #1 n'est pas utilisée comme branche de documentation active.
 
 Aucune tâche P0 supplémentaire n'est cochée sur la base d'un job annulé. Aucun changement de code, secret ou permission, aucune fusion et aucune relance de workflow n'ont été effectués pendant ce contrôle.
+
+
+## Contrôle factuel — 26 novembre 2026
+
+### PR #1 — référence fusionnée
+
+- [PR #1](https://github.com/claudeia206/VMPK/pull/1) reste `closed/merged` dans `devel`. La branche historique `fix/linux-local-midi-dependency` pointe toujours sur `b70b9ab3d710c4e8f7269fa8c0ba0bda68ab25e2` ; le commit de fusion est [295fd10](https://github.com/claudeia206/VMPK/commit/295fd10b688d36b0b06fc6aba6cb56d0e32c68a2).
+- Les jobs du head PR #1 sont terminés en `success` : Linux x86_64 (job `128301115613`, runner self-hosted) et ARM64 (`128301115414`) dans [run Linux](https://github.com/claudeia206/VMPK/actions/runs/42338619625) ; Windows MSVC x64/ARM64 (`128301115462`, `128301115569`) dans [run MSVC](https://github.com/claudeia206/VMPK/actions/runs/42338619573) ; MSYS2 ucrt64/clang64/clangarm64 dans [run MSYS2](https://github.com/claudeia206/VMPK/actions/runs/42338619619) ; macOS x86_64/ARM64 (`128301115772`, `128301115667`) dans [run macOS](https://github.com/claudeia206/VMPK/actions/runs/42338619626).
+- Artefacts AppDir/AppImage Linux x86_64 et ARM64, répertoires/installeurs MSVC x64/ARM64 et ZIP macOS x86_64/ARM64 présents. Au contrôle du 26/11, ils ne sont pas expirés ; expiration API : 05/02/2027. Aucun artefact MSYS2 n'est prévu.
+
+### PR #4 — head documentaire `91601b3e4cd46c7248e2558835f2fe26aaba6da4`
+
+Les jobs de la campagne du 24/11 sont maintenant tous terminaux :
+
+| Cible | Job | État terminal | Preuve |
+|---|---:|---|---|
+| Linux ARM64 | `138326269584` | `success` | [run Linux](https://github.com/claudeia206/VMPK/actions/runs/45359689751) |
+| Linux x86_64 | `138326270567` | `cancelled` | [run Linux](https://github.com/claudeia206/VMPK/actions/runs/45359689751) |
+| Windows MSVC ARM64 | `138326270869` | `success` | [run MSVC](https://github.com/claudeia206/VMPK/actions/runs/45359689949) |
+| Windows MSVC x64 | `138326271278` | `success` | [run MSVC](https://github.com/claudeia206/VMPK/actions/runs/45359689949) |
+| MSYS2 ucrt64 | `138326270486` | `success` | [run MSYS2](https://github.com/claudeia206/VMPK/actions/runs/45359689759) |
+| MSYS2 clang64 | `138326270715` | `success` | [run MSYS2](https://github.com/claudeia206/VMPK/actions/runs/45359689759) |
+| MSYS2 clangarm64 | `138326270818` | `success` | [run MSYS2](https://github.com/claudeia206/VMPK/actions/runs/45359689759) |
+| macOS x86_64 | `138326270103` | `success` | [run macOS](https://github.com/claudeia206/VMPK/actions/runs/45359689642) |
+| macOS ARM64 | `138326269866` | `cancelled` | [run macOS](https://github.com/claudeia206/VMPK/actions/runs/45359689642) |
+
+- Linux x86_64 : label `self-hosted`, `runner_id=0`, nom vide, zéro étape. Le job a été annulé après l'attente de 24 h ; téléchargement des logs `404 BlobNotFound`. Aucune compilation n'a commencé et aucune cause de compilation n'est démontrée.
+- macOS ARM64 : label `macos-15`, `runner_id=0`, nom vide, zéro étape ; logs également indisponibles (`404 BlobNotFound`). Le job est annulé sans preuve d'un échec de compilation. macOS x86_64 a bien réussi.
+- Artefacts non expirés (expiration API : 22/02/2027) : Linux ARM64 AppDir `14904244305` et AppImage `14904194505` ; Windows x64/ARM64 EXE `14904840527` et `14904177242`, plus répertoires MSVC `14904062507` et `14903159849` ; macOS x86_64 ZIP `14906125044`. Aucun artefact Linux x86_64 ni macOS ARM64 ; aucun artefact MSYS2 prévu.
+- PR #4 reste ouverte sans revue GitHub formelle. Le head `91601b3` est donc documenté, mais pas prêt à être fusionné.
+
+### PR #5 — tests de régression ajoutés
+
+- Nouveau commit sur `security/harden-pr-target-branch-check` : [`78a8f3e`](https://github.com/claudeia206/VMPK/commit/78a8f3e14c939d05ab3342fc3ad517aa32991674), parent `b8b7750`. Il ajoute `.github/tests/test-check-branches.sh` et `.github/workflows/check-branches-tests.yml`.
+- Le nouveau workflow non privilégié `pull_request`, avec `permissions: contents: read`, exécute le test sur le code réel de la PR. [Run 45785092873](https://github.com/claudeia206/VMPK/actions/runs/45785092873), job `139789749410` : **success**. Les logs affichent six validations réussies : branche non-`devel` vers `master` rejetée ; `devel` vers `master` autorisée ; branche vers `devel` autorisée ; `devel` vers `devel` autorisée ; métacaractères shell conservés comme données ; aucune substitution de commande exécutée.
+- Le run `pull_request_target` [45785090223](https://github.com/claudeia206/VMPK/actions/runs/45785090223) est `success`, mais exécute toujours la version du workflow de la branche de base `devel` ; il ne valide pas le fichier proposé dans la PR. Le nouveau workflow `pull_request` apporte précisément le test du head.
+- CI de compilation du head `78a8f3e`, au dernier contrôle :
+  - Linux ARM64 : `in_progress`, job `139789758882` ; installation système en cours.
+  - Linux x86_64 : `queued`, job `139789758974`, label `self-hosted`, `runner_id=null`, nom vide, zéro étape.
+  - Windows MSVC x64/ARM64 : `in_progress`, jobs `139789749201` et `139789749009`.
+  - MSYS2 ucrt64/clangarm64/clang64 : `in_progress`, jobs `139789749095`, `139789749539` et `139789749571`.
+  - macOS x86_64 : `in_progress`, job `139789749705` ; macOS ARM64 : `queued`, job `139789749685`, sans runner attribué ni étape.
+  - Runs : [Linux 45785093927](https://github.com/claudeia206/VMPK/actions/runs/45785093927), [MSVC 45785092910](https://github.com/claudeia206/VMPK/actions/runs/45785092910), [MSYS2 45785093096](https://github.com/claudeia206/VMPK/actions/runs/45785093096), [macOS 45785093005](https://github.com/claudeia206/VMPK/actions/runs/45785093005).
+- Aucun artefact de packaging n'est encore disponible pour ce nouveau head. Les jobs `queued` ou `in_progress` ne sont pas comptés comme des succès.
+- La revue GitHub de PR #5 reste `COMMENTED`, pas `APPROVED` ; elle a été soumise par l'auteur du dépôt. PR #5 reste ouverte et non fusionnée. Le correctif de sécurité est désormais couvert par un test CI du head, mais son intégration dans `devel` et une revue indépendante restent nécessaires.
+
+### Autres PR et blocages P0
+
+- PR #2 : Linux x86_64 `cancelled` sans runner ni étape ; ARM64, Windows, MSYS2 et macOS `success` sur les derniers runs de build disponibles.
+- PR #3 : Linux ARM64 `success`, Linux x86_64 `cancelled` sans runner ni étape ; Windows, MSYS2 et macOS `success`. Le pin Drumstick `23da19d05ad511bd9140a2d00eedead2ae5bac1a` reste donc non validé sur x86_64.
+- PR #6 : Linux x86_64/ARM64, Windows MSVC, MSYS2 et macOS `success` sur le head documenté ; smoke tests AppDir/AppImage Linux validés sur les deux architectures.
+- PR #7 : Linux ARM64 `success`, Linux x86_64 `cancelled` sans runner ni étape ; les permissions `contents: read` ne sont donc pas validées sur Linux Mint x86_64.
+- PR #8 : ARM64, Windows MSVC, MSYS2 et macOS `success` ; Linux x86_64 `cancelled` sans runner ni étape. Les smoke tests NSIS et macOS restent validés sur les architectures testées.
+- Aucune issue ouverte n'a été retournée. Le secret `GH_PAT` et son périmètre effectif restent non inspectables depuis cette connexion ; aucun secret ni droit n'a été modifié.
+- Action locale toujours nécessaire pour diagnostiquer le runner Linux Mint : `sudo systemctl status actions.runner.claudeia206-VMPK.linux-UX303LA.service --no-pager`, puis `sudo journalctl -u actions.runner.claudeia206-VMPK.linux-UX303LA.service -n 100 --no-pager`. Les jobs GitHub x86_64 avec `runner_id=0` ou `null` démontrent l'absence d'attribution, mais ne révèlent pas l'état systemd local.
+- Les tâches P0 pin Drumstick x86_64, permissions x86_64 et portée de GH_PAT restent ouvertes. La sécurité PR #5 a maintenant un test CI ciblé, mais attend encore revue indépendante et intégration. Ne pas démarrer P2/P3.
+
+Aucune fusion, aucun changement de secret ou de permission, aucune relance manuelle et aucune validation MIDI matérielle ne sont revendiqués.
