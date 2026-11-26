@@ -1,0 +1,22 @@
+name: Test pull request branch policy
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/check-branches.yml"
+      - ".github/workflows/check-branches-tests.yml"
+      - ".github/tests/test-check-branches.sh"
+
+permissions:
+  contents: read
+
+jobs:
+  branch-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout pull request code
+        uses: actions/checkout@v7
+
+      - name: Test the actual workflow condition
+        run: bash .github/tests/test-check-branches.sh
