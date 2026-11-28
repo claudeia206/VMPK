@@ -33,6 +33,8 @@ La feuille de route complète, maintenue en français, est disponible ici :
 
 ➡️ **[Consulter la roadmap de développement](ROADMAP.md)**
 
+Pour les versions de Qt/CMake/Drumstick réellement utilisées par la CI, les architectures, les artefacts et les limites de validation, consulter la [matrice CI et reproductibilité](docs/CI-BUILD-MATRIX.md).
+
 ### Priorités de développement
 
 1. **État des lieux et CI** : vérifier les builds Linux (x86_64 et ARM64), Windows (MSVC et MSYS2) et macOS, ainsi que les versions et permissions des workflows.
